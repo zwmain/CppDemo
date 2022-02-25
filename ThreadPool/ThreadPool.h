@@ -11,12 +11,16 @@
 class ThreadPool
 {
 public:
-    explicit ThreadPool(const size_t pool_size);
+    explicit ThreadPool(const size_t pool_size = 0);
 
 private:
-    std::vector<std::thread> workers;
-    std::queue<std::function<void()>> tasks;
-    std::mutex queue_mutex;
-    std::condition_variable condition;
+    // 需要跟踪线程以便加入它们
+    std::vector<std::thread> _workers;
+    // 任务队列
+    std::queue<std::function<void()>> _tasks;
+
+    // 同步
+    std::mutex _queue_mutex; // 互斥量
+    std::condition_variable _condition; // 条件变量
     bool stop = false;
 };
