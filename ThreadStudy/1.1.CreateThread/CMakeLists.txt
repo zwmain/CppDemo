@@ -3,6 +3,10 @@ project(CreateThread)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+if (MSVC)
+    add_compile_options("/source-charset:utf-8")
+endif()
+
 add_executable(${PROJECT_NAME} main.cpp)
 
 # 如果没有下面这个链接库，则会报错
