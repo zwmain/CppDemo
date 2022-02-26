@@ -2,9 +2,11 @@
 #include <thread>
 #include <mutex>
 #include <deque>
+#include <condition_variable>
 
 std::mutex mtx;
 std::deque<int> q;
+std::condition_variable cv;
 
 // producer
 void task1()
@@ -14,6 +16,8 @@ void task1()
     {
         std::unique_lock<std::mutex> lock(mtx);
         q.push_back(i);
+        // 当队列有元素后通知正在等待的线程
+        cv.notify_one();
         i < 10000 ? ++i : i = 0;
     }
 }
@@ -24,6 +28,14 @@ void task2()
     while (true)
     {
         std::unique_lock<std::mutex> lock(mtx);
+
+        while (q.empty())
+        {
+            // 让线程处于休眠状态
+            // 此时会解锁
+            cv.wait(lock);
+        }
+
         if (!q.empty())
         {
             int data = q.front();
