@@ -56,3 +56,37 @@ void task1()
 后者有更多的成员变量，可以在需要的时候加锁和解锁，而不是只能在构造和析构的时候做
 
 ## 原子变量
+
+原子变量可以在不使用锁的情况下对变量进行原子操作
+
+`std::atomic<T>`就像是对变量的一个包裹
+
+```c++
+int globalVar = 0;
+
+std::mutex mtx;
+
+std::atomic<int> atoVar = 0;
+
+void task1()
+{
+    for (int i = 0; i < 1000; ++i)
+    {
+        // 使用lock_guard可以自动加锁
+        // 并在离开作用域后自动解锁
+        // std::lock_guard<std::mutex> lock(mtx);
+
+        // unique_lock更加灵活
+        // 会有更多的成员函数操作锁
+        std::unique_lock<std::mutex> lock(mtx);
+
+        ++globalVar;
+        ++atoVar;
+        // 执行一些逻辑
+        std::this_thread::sleep_for(std::chrono::microseconds(50));
+        --atoVar;
+        --globalVar;
+    }
+}
+
+```

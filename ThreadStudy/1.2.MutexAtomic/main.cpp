@@ -1,10 +1,13 @@
 #include <iostream>
 #include <thread>
 #include <mutex>
+#include <atomic>
 
 int globalVar = 0;
 
 std::mutex mtx;
+
+std::atomic<int> atoVar = 0;
 
 void task1()
 {
@@ -19,8 +22,10 @@ void task1()
         std::unique_lock<std::mutex> lock(mtx);
 
         ++globalVar;
+        ++atoVar;
         // 执行一些逻辑
         std::this_thread::sleep_for(std::chrono::microseconds(50));
+        --atoVar;
         --globalVar;
     }
 }
