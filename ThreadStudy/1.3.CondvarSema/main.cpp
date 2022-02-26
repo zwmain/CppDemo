@@ -3,10 +3,14 @@
 #include <mutex>
 #include <deque>
 #include <condition_variable>
+#include <semaphore>
 
 std::mutex mtx;
 std::deque<int> q;
 std::condition_variable cv;
+
+std::counting_semaphore<4> csma;
+std::binary_semaphore bsma;
 
 // producer
 void task1()
@@ -47,8 +51,12 @@ void task2()
 
 int main()
 {
+    csma.acquire();
+    bsma.acquire();
     std::thread t1(task1);
     std::thread t2(task2);
+    bsma.release();
+    csma.release();
 
     t1.join();
     t2.join();
