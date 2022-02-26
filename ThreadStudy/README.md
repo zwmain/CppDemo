@@ -3,7 +3,7 @@
 项目CMake模板
 
 ```cmake
-project(CreateThread)
+project(ProName)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
