@@ -70,8 +70,8 @@ ThreadPool::addTask(F &&func, Args &&...args)
 {
     // 包裹用户传进来的函数
     using RtnType = typename std::result_of<F(Args...)>::type;
-    std::packaged_task<RtnType()> usrTask(
-        std::bind(std::forward<F>(f), std::forward<Args>(args)...));
+    std::packaged_task<RtnType> usrTask(
+        std::bind(std::forward<F>(func), std::forward<Args>(args)...));
 
     // 准备包裹返回值
     std::future<RtnType> res = usrTask.get_future();
