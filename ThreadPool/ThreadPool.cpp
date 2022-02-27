@@ -12,7 +12,7 @@ size_t ThreadPool::size() const
 
 template <class F, class... Args>
 std::future<typename std::result_of<F(Args...)>::type>
-    ThreadPool::enqueue(F &&func, Args &&...args)
+ThreadPool::enqueue(F &&func, Args &&...args)
 {
     // todo
 }

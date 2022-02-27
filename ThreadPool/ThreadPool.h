@@ -22,7 +22,7 @@ public:
     // std::feature保存的值的类型为函数的返回值的类型
     template <class F, class... Args>
     std::future<typename std::result_of<F(Args...)>::type>
-        enqueue(F &&func, Args &&...args);
+    enqueue(F &&func, Args &&...args);
 
 private:
     // 需要跟踪线程以便加入它们
