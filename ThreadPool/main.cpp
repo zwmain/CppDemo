@@ -11,6 +11,8 @@ int main()
     ThreadPool pool(4);
     std::cout << pool.size() << std::endl;
 
+    pool.start();
+
     std::vector<std::future<int>> resVec;
     for (int i = 0; i < 16; ++i)
     {

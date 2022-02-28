@@ -63,31 +63,3 @@ void ThreadPool::start()
             });
     }
 }
-
-template <class F, class... Args>
-std::future<typename std::result_of<F(Args...)>::type>
-ThreadPool::addTask(F &&func, Args &&...args)
-{
-    // 包裹用户传进来的函数
-    using RtnType = typename std::result_of<F(Args...)>::type;
-    std::packaged_task<RtnType> usrTask(
-        std::bind(std::forward<F>(func), std::forward<Args>(args)...));
-
-    // 准备包裹返回值
-    std::future<RtnType> res = usrTask.get_future();
-
-    // 添加到队列
-    std::unique_lock<std::mutex> lock(_mtx_tasks);
-    _tasks.emplace(
-        [task = std::move(usrTask)]()
-        {
-            task();
-        });
-    lock.unlock();
-
-    // 通知等待的线程
-    _condition.notify_one();
-
-    // 返回包裹返回值的future
-    return res;
-}
