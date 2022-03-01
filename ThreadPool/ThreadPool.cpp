@@ -31,7 +31,7 @@ void ThreadPool::start()
         _workers.emplace_back(
             [this]()
             {
-                while (true)
+                while (this->_is_run)
                 {
                     // 对任务队列加锁
                     std::unique_lock<std::mutex> lock(this->_mtx_tasks);
