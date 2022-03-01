@@ -37,16 +37,18 @@ void ThreadPool::start()
                     std::unique_lock<std::mutex> lock(this->_mtx_tasks);
                     // 如果任务队列一直为空，则等待
                     // 如果后面函数返回true，则停止等待
-                    this->_condition.wait(lock,
-                                          [this]()
-                                          {
-                                              return !this->_is_run || !this->_tasks.empty();
-                                          });
-
-                    // 等待结束后，如果线程被关闭或队列为空，则结束线程
-                    if (!this->_is_run || this->_tasks.empty())
+                    while (this->_tasks.empty())
                     {
-                        return;
+                        this->_condition.wait(lock,
+                                              [this]()
+                                              {
+                                                  return !this->_is_run || !this->_tasks.empty();
+                                              });
+                        // 如果线程池已经关闭则退出线程
+                        if(!this->_is_run)
+                        {
+                            return;
+                        }
                     }
 
                     // 取出一个任务
