@@ -32,8 +32,19 @@ namespace zwn
             OBJECT_VALUE
         };
 
-        MyValue(std::nullptr_t val = nullptr);
+        MyValue();
+        MyValue(bool val);
+        MyValue(double val);
+        MyValue(const std::string& val);
+        MyValue(std::string&& val);
+        MyValue(const std::vector<MyValue>& val);
+        MyValue(std::vector<MyValue>&& val);
+        MyValue(const MyJson& val);
+        MyValue(MyJson&& val);
         ~MyValue();
+
+        ValueType type() const;
+        std::string& getString();
 
     private:
         std::variant<
