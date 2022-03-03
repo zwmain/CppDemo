@@ -35,6 +35,7 @@ namespace zwn
         MyValue();
         MyValue(bool val);
         MyValue(double val);
+        MyValue(const char* val);
         MyValue(const std::string& val);
         MyValue(std::string&& val);
         MyValue(const std::vector<MyValue>& val);

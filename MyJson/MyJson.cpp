@@ -22,6 +22,10 @@ MyValue::MyValue(double val) : _data(val), _val_type(NUMBER_VALUE)
 {
 }
 
+MyValue::MyValue(const char* val):_data(std::string(val)),_val_type(STRING_VALUE)
+{
+}
+
 MyValue::MyValue(const std::string &val) : _data(val), _val_type(STRING_VALUE)
 {
 }
