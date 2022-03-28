@@ -1,6 +1,9 @@
 #include <iostream>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <unistd.h>
+#include <cstring>
+#include <string>
 
 int main()
 {
@@ -42,7 +45,33 @@ int main()
             std::cout << "accept()错误" << std::endl;
             break;
         }
+
+        char buffer[1024] = {'\0'};
+        std::string str;
+        std::cout << "开始接收数据" << std::endl;
+        while (true)
+        {
+            std::memset(buffer, 0, sizeof(buffer));
+            int num_recv = recv(client_fd, buffer, sizeof(buffer), 0);
+            if (num_recv == 0)
+            {
+                std::cout << "连接断开" << std::endl;
+                break;
+            }
+            else if (num_recv < 0)
+            {
+                std::cout << "连接错误" << std::endl;
+                break;
+            }
+            else
+            {
+                str.append(buffer, num_recv);
+            }
+        }
+        close(client_fd);
+        std::cout << str << std::endl;
     }
+    close(serv_fd);
 
     return 0;
 }
