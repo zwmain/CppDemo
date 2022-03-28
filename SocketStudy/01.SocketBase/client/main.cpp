@@ -31,10 +31,13 @@ int main()
     }
 
     std::string str = "Linux socket test 网络测试";
+    size_t data_len = str.size();
+    rtn_status = send(client_fd, &data_len, sizeof(data_len), 0);
     rtn_status = send(client_fd, str.c_str(), str.length(), 0);
     if (0 > rtn_status)
     {
         std::cout << "send()错误" << std::endl;
+        close(client_fd);
         return 0;
     }
 

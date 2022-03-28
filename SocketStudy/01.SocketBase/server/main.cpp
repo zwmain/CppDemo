@@ -35,7 +35,8 @@ int main()
         return 0;
     }
 
-    while (true)
+    bool run_flag = true;
+    while (run_flag)
     {
         sockaddr_in client_addr;
         size_t addr_len = sizeof(client_addr);
@@ -49,10 +50,13 @@ int main()
         char buffer[1024] = {'\0'};
         std::string str;
         std::cout << "开始接收数据" << std::endl;
-        while (true)
+        size_t data_len = 0;
+        recv(client_fd, &data_len, sizeof(data_len), 0);
+        while (data_len > 0)
         {
             std::memset(buffer, 0, sizeof(buffer));
             int num_recv = recv(client_fd, buffer, sizeof(buffer), 0);
+            data_len -= num_recv;
             if (num_recv == 0)
             {
                 std::cout << "连接断开" << std::endl;
@@ -70,6 +74,7 @@ int main()
         }
         close(client_fd);
         std::cout << str << std::endl;
+        run_flag = false;
     }
     close(serv_fd);
 
