@@ -2,7 +2,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <unistd.h>
-#include <netdb.h>
+#include <arpa/inet.h>
 #include <cstring>
 #include <string>
 
@@ -17,20 +17,14 @@ int main()
         return 0;
     }
 
-    hostent *h = gethostbyname("127.0.0.1");
-    if (nullptr == h)
-    {
-        std::cout << "gethostbyname()" << std::endl;
-        return 0;
-    }
-
     sockaddr_in server_addr;
+    std::memset(&server_addr, 0, sizeof(server_addr));
     server_addr.sin_family = AF_INET;
     server_addr.sin_port = htons(8848);
-    std::memcpy(&server_addr.sin_addr, h->h_addr_list, h->h_length);
+    server_addr.sin_addr.s_addr = htonl(2130706433);
 
     int rtn_status = connect(client_fd, (sockaddr *)&server_addr, sizeof(server_addr));
-    if (0 != rtn_status)
+    if (0 > rtn_status)
     {
         std::cout << "connect()错误" << std::endl;
         return 0;
@@ -38,7 +32,7 @@ int main()
 
     std::string str = "Linux socket test 网络测试";
     rtn_status = send(client_fd, str.c_str(), str.length(), 0);
-    if (0 != rtn_status)
+    if (0 > rtn_status)
     {
         std::cout << "send()错误" << std::endl;
         return 0;

@@ -19,7 +19,7 @@ int main()
     sockaddr_in servaddr;
     servaddr.sin_family = AF_INET;
     servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
-    servaddr.sin_port = 8848;
+    servaddr.sin_port = htons(8848);
 
     int rtn_status = bind(serv_fd, (sockaddr *)&servaddr, sizeof(servaddr));
     if (0 != rtn_status)
