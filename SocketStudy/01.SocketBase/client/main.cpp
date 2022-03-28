@@ -21,9 +21,15 @@ int main()
     std::memset(&server_addr, 0, sizeof(server_addr));
     server_addr.sin_family = AF_INET;
     server_addr.sin_port = htons(8848);
-    server_addr.sin_addr.s_addr = htonl(2130706433);
+    // server_addr.sin_addr.s_addr = htonl(2130706433);
+    int rtn_status = inet_pton(AF_INET, "127.0.0.1", &server_addr.sin_addr);
+    if (0 > rtn_status)
+    {
+        std::cout << "inet_pton()错误" << std::endl;
+        return 0;
+    }
 
-    int rtn_status = connect(client_fd, (sockaddr *)&server_addr, sizeof(server_addr));
+    rtn_status = connect(client_fd, (sockaddr *)&server_addr, sizeof(server_addr));
     if (0 > rtn_status)
     {
         std::cout << "connect()错误" << std::endl;
