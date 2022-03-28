@@ -1,7 +1,59 @@
 #include <iostream>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <unistd.h>
+#include <netdb.h>
+#include <cstring>
+#include <string>
 
 int main()
 {
     std::cout << "Socket客户端" << std::endl;
+
+    int client_fd = socket(AF_INET, SOCK_STREAM, 0);
+    if (-1 == client_fd)
+    {
+        std::cout << "socket()错误" << std::endl;
+        return 0;
+    }
+
+    hostent *h = gethostbyname("127.0.0.1");
+    if (nullptr == h)
+    {
+        std::cout << "gethostbyname()" << std::endl;
+        return 0;
+    }
+
+    sockaddr_in server_addr;
+    server_addr.sin_family = AF_INET;
+    server_addr.sin_port = htons(8848);
+    std::memcpy(&server_addr.sin_addr, h->h_addr_list, h->h_length);
+
+    int rtn_status = connect(client_fd, (sockaddr *)&server_addr, sizeof(server_addr));
+    if (0 != rtn_status)
+    {
+        std::cout << "connect()错误" << std::endl;
+        return 0;
+    }
+
+    std::string str = "Linux socket test 网络测试";
+    rtn_status = send(client_fd, str.c_str(), str.length(), 0);
+    if (0 != rtn_status)
+    {
+        std::cout << "send()错误" << std::endl;
+        return 0;
+    }
+
+    char buffer[1024] = {'\0'};
+    int num_recv = recv(client_fd, buffer, sizeof(buffer), 0);
+    if (num_recv > 0)
+    {
+        str.clear();
+        str.append(buffer, num_recv);
+        std::cout << str << std::endl;
+    }
+
+    close(client_fd);
+
     return 0;
 }
