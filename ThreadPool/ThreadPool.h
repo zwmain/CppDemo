@@ -12,12 +12,16 @@
 class ThreadPool
 {
 public:
-    explicit ThreadPool(const size_t pool_size = 0);
+    // 构造函数，接收一个表示线程池大小的整数，默认为4
+    explicit ThreadPool(const size_t pool_size = 4);
 
+    // 析构函数，关闭正在运行的线程池，并等待已经在执行的线程结束
     ~ThreadPool();
 
+    // 获取线程池大小
     size_t size() const;
 
+    // 启动线程池
     void start();
 
     // addTask函数接受的参数转发一个函数和该函数的参数
@@ -29,9 +33,10 @@ public:
 private:
     // 执行队列
     std::vector<std::thread> _workers;
-    // 任务队列
+    // 任务队列，是临界资源
     std::queue<std::function<void()>> _tasks;
 
+    // 线程池大小
     const size_t _pool_size = 0;
 
     // 同步
@@ -49,10 +54,10 @@ ThreadPool::ThreadPool(const size_t pool_size) : _pool_size(pool_size)
 ThreadPool::~ThreadPool()
 {
     // 关闭线程池
-    std::unique_lock<std::mutex> lock(_mtx_tasks);
-    _is_run = false;
-    lock.unlock();
-    _condition.notify_all();
+    std::unique_lock<std::mutex> lock(_mtx_tasks); // 上锁
+    _is_run = false;                               // 将运行状态设置为false
+    lock.unlock();                                 // 解锁
+    _condition.notify_all();                       // 通知正在等待的所有线程，运行状态发生变化
 
     // 等待剩余线程执行完毕
     for (auto &i : _workers)
@@ -70,9 +75,12 @@ void ThreadPool::start()
 {
     for (size_t i = 0; i < _pool_size; ++i)
     {
+        // 创建线程
+        // C++中，线程创建即执行
         _workers.emplace_back(
             [this]()
             {
+                // 线程内部是一个循环
                 while (this->_is_run)
                 {
                     // 对任务队列加锁
@@ -81,13 +89,15 @@ void ThreadPool::start()
                     // 如果后面函数返回true，则停止等待
                     while (this->_tasks.empty())
                     {
+                        // 等待时会释放lock锁，等待结束会自动上锁
                         this->_condition.wait(lock,
                                               [this]()
                                               {
+                                                  // 如果运行状态为false或任务队列不为空，则停止等待
                                                   return !this->_is_run || !this->_tasks.empty();
                                               });
                         // 如果线程池已经关闭则退出线程
-                        if(!this->_is_run)
+                        if (!this->_is_run)
                         {
                             return;
                         }
