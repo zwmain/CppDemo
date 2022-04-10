@@ -8,6 +8,7 @@
 #include <condition_variable>
 #include <future>
 #include <memory>
+#include <atomic>
 
 class ThreadPool
 {
@@ -42,7 +43,7 @@ private:
     // 同步
     std::mutex _mtx_tasks;              // 互斥量
     std::condition_variable _condition; // 条件变量
-    bool _is_run = true;
+    std::atomic<bool> _is_run = true;   // 运行状态标记，是临界资源，使用原子变量表示
 };
 
 // ============================ 实现-Implement ================================
@@ -54,9 +55,7 @@ ThreadPool::ThreadPool(const size_t pool_size) : _pool_size(pool_size)
 ThreadPool::~ThreadPool()
 {
     // 关闭线程池
-    std::unique_lock<std::mutex> lock(_mtx_tasks); // 上锁
-    _is_run = false;                               // 将运行状态设置为false
-    lock.unlock();                                 // 解锁
+    _is_run = false;                               // 将运行状态设置为false，原子变量可以直接修改
     _condition.notify_all();                       // 通知正在等待的所有线程，运行状态发生变化
 
     // 等待剩余线程执行完毕
