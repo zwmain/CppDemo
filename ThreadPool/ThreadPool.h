@@ -25,6 +25,9 @@ public:
     // 启动线程池
     void start();
 
+    // 关闭线程池
+    void close();
+
     // addTask函数接受的参数转发一个函数和该函数的参数
     // addTask函数返回一个std::feature，一个将来的值
     // std::feature保存的值的类型为函数的返回值的类型
@@ -54,15 +57,8 @@ ThreadPool::ThreadPool(const size_t pool_size) : _pool_size(pool_size)
 
 ThreadPool::~ThreadPool()
 {
-    // 关闭线程池
-    _is_run = false;                               // 将运行状态设置为false，原子变量可以直接修改
-    _condition.notify_all();                       // 通知正在等待的所有线程，运行状态发生变化
-
-    // 等待剩余线程执行完毕
-    for (auto &i : _workers)
-    {
-        i.join();
-    }
+    // 调用close函数
+    close();
 }
 
 size_t ThreadPool::size() const
@@ -111,6 +107,19 @@ void ThreadPool::start()
                     oneTask();
                 }
             });
+    }
+}
+
+void ThreadPool::close()
+{
+    // 关闭线程池
+    _is_run = false;         // 将运行状态设置为false，原子变量可以直接修改
+    _condition.notify_all(); // 通知正在等待的所有线程，运行状态发生变化
+
+    // 等待剩余线程执行完毕
+    for (auto &i : _workers)
+    {
+        i.join();
     }
 }
 
