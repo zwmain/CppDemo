@@ -17,3 +17,23 @@ int socket(int af, int type, int protocol);
 3. `protocol`为传输使用的协议，常用的有`IPPROTO_TCP`和`IPPTOTO_UDP`，分别为TCP协议和UDP协议
 
 其实，前两个参数就可以确定第三个参数了，面向数据流的只有TCP协议，面向数据报的只有UDP协议，所以在实际使用中，最后一个参数一般填0。
+
+## bind()函数
+
+绑定一个套接字到某一个IP地址和端口上
+
+## listen()函数
+
+监听一个套接字
+
+## accept()函数
+
+阻塞，直到接收到一个请求
+
+## recv()函数
+
+从套接字读取数据
+
+## close()函数
+
+关闭套接字
