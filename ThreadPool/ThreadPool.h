@@ -47,6 +47,9 @@ private:
     std::mutex _mtx_tasks;              // 互斥量
     std::condition_variable _condition; // 条件变量
     std::atomic<bool> _is_run = true;   // 运行状态标记，是临界资源，使用原子变量表示
+
+    ThreadPool(const ThreadPool &) = delete;
+    ThreadPool &operator=(const ThreadPool &) = delete;
 };
 
 // ============================ 实现-Implement ================================
