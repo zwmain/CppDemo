@@ -1,3 +1,4 @@
+cmake_minimum_required(VERSION 3.18)
 project(ThreadPool)
 
 # 设置C++标准
