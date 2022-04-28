@@ -11,6 +11,8 @@ ThreadPool：基于C++11的线程池，可以支持任何函数和返回值
 ThreadStudy：C++多线程基本知识学习
 
 ```cmake
+cmake_minimum_required(VERSION 3.18.0)
+
 project(ProjectName LANGUAGES CXX)
 
 # 设置C++标准
