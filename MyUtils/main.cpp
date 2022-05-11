@@ -10,5 +10,12 @@ int main()
         std::cout << i << "  ";
     }
     std::cout << std::endl;
+    std::regex sep_reg("。");
+    res = splitString(txt, sep_reg);
+    for (const auto &i : res)
+    {
+        std::cout << i << "  ";
+    }
+    std::cout << std::endl;
     return 0;
 }
