@@ -1,6 +1,8 @@
 #include <string>
 #include <vector>
 #include <regex>
+#include <fstream>
+#include <sstream>
 
 /**
  * @brief 分割字符串
@@ -19,6 +21,14 @@ std::vector<std::string> splitString(const std::string &src_str, const std::stri
  * @return 字符串数组
  */
 std::vector<std::string> splitString(const std::string &src_str, const std::regex &sep_reg);
+
+/**
+ * @brief 以文本形式读取整个文件
+ *
+ * @param fp 文件路径
+ * @return 文本内容字符串
+ */
+std::string readFileAsTxt(const std::string &fp);
 
 // ----------------------------------------------------------------------------
 
@@ -58,4 +68,16 @@ std::vector<std::string> splitString(const std::string &src_str, const std::rege
     std::sregex_token_iterator beg(src_str.begin(), src_str.end(), sep_reg, -1);
     std::sregex_token_iterator end;
     return std::vector<std::string>(beg, end);
+}
+
+std::string readFileAsTxt(const std::string &fp)
+{
+    std::ifstream fi(fp);
+    if (!fi.is_open())
+    {
+        return std::string();
+    }
+    std::ostringstream oss;
+    oss << fi.rdbuf();
+    return oss.str();
 }
