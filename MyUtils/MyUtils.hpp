@@ -3,6 +3,7 @@
 #include <regex>
 #include <fstream>
 #include <sstream>
+#include <functional>
 
 /**
  * @brief 分割字符串
@@ -37,6 +38,14 @@ std::vector<std::string> splitStringWithLineBreak(const std::string &src_str);
  * @return 文本内容字符串
  */
 std::string readFileAsTxt(const std::string &fp);
+
+/**
+ * @brief 按行遍历文件
+ *
+ * @param fp 文件路径
+ * @param func 回调函数，接收字符串作为参数，返回布尔表示是否继续遍历
+ */
+void traverseFileByLine(const std::string &fp, std::function<bool(const std::string &)> func);
 
 // ----------------------------------------------------------------------------
 
@@ -94,4 +103,23 @@ std::string readFileAsTxt(const std::string &fp)
     std::ostringstream oss;
     oss << fi.rdbuf();
     return oss.str();
+}
+
+void traverseFileByLine(const std::string &fp, std::function<bool(const std::string &)> func)
+{
+    std::ifstream fi(fp);
+    if (!func || !fi.is_open())
+    {
+        return;
+    }
+    while (fi.peek() != EOF)
+    {
+        std::string line_str;
+        std::getline(fi, line_str);
+        bool is_continue = func(line_str);
+        if (!is_continue)
+        {
+            break;
+        }
+    }
 }
