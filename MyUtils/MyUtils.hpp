@@ -23,6 +23,14 @@ std::vector<std::string> splitString(const std::string &src_str, const std::stri
 std::vector<std::string> splitString(const std::string &src_str, const std::regex &sep_reg);
 
 /**
+ * @brief 使用换行符分割字符串
+ *
+ * @param src_str 待分割的字符串
+ * @return 字符串数组
+ */
+std::vector<std::string> splitStringWithLineBreak(const std::string &src_str);
+
+/**
  * @brief 以文本形式读取整个文件
  *
  * @param fp 文件路径
@@ -68,6 +76,12 @@ std::vector<std::string> splitString(const std::string &src_str, const std::rege
     std::sregex_token_iterator beg(src_str.begin(), src_str.end(), sep_reg, -1);
     std::sregex_token_iterator end;
     return std::vector<std::string>(beg, end);
+}
+
+std::vector<std::string> splitStringWithLineBreak(const std::string &src_str)
+{
+    std::regex reg("\\r\\n|\\n|\\r");
+    return splitString(src_str, reg);
 }
 
 std::string readFileAsTxt(const std::string &fp)
