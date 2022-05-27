@@ -89,8 +89,29 @@ std::vector<std::string> splitString(const std::string &src_str, const std::rege
 
 std::vector<std::string> splitStringWithLineBreak(const std::string &src_str)
 {
-    std::regex reg("\\r\\n|\\n|\\r");
-    return splitString(src_str, reg);
+    // 这种方式效率极低，而且还无法正常运行
+    // std::regex reg("\\r\\n|\\n|\\r");
+    // return splitString(src_str, reg);
+
+    const std::string crlf("\r\n");
+    const std::string lf("\n");
+    const std::string cr("\r");
+    if (std::string::npos != src_str.find(crlf))
+    {
+        return splitString(src_str, crlf);
+    }
+    else if (std::string::npos != src_str.find(lf))
+    {
+        return splitString(src_str, lf);
+    }
+    else if (std::string::npos != src_str.find(cr))
+    {
+        return splitString(src_str, cr);
+    }
+    else
+    {
+        return std::vector<std::string>();
+    }
 }
 
 std::string readFileAsTxt(const std::string &fp)
