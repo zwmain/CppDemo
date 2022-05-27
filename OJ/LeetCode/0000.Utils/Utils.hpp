@@ -10,7 +10,7 @@ namespace zwn
 
     std::vector<std::vector<int>> inputIntArr(const std::string& fp)
     {
-        // todo
+        // auto lines=readFileAsLine(fp);
     }
 
 } // namespace zwn
