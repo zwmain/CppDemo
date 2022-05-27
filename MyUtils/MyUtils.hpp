@@ -48,7 +48,15 @@ namespace zwn
      * @param fp 文件路径
      * @param func 回调函数，接收字符串作为参数，返回布尔表示是否继续遍历
      */
-    void traverseFileByLine(const std::string &fp, std::function<bool(const std::string &)> func);
+    void traverseFileByLine(const std::string &fp, std::function<bool(const std::string &&)> func);
+
+    /**
+     * @brief 按行读取文件
+     *
+     * @param fp 文件路径
+     * @return 以行形式存在的文件内容
+     */
+    std::vector<std::string> readFileAsLine(const std::string &fp);
 
     // ----------------------------------------------------------------------------
 
@@ -129,7 +137,7 @@ namespace zwn
         return oss.str();
     }
 
-    void traverseFileByLine(const std::string &fp, std::function<bool(const std::string &)> func)
+    void traverseFileByLine(const std::string &fp, std::function<bool(const std::string &&)> func)
     {
         std::ifstream fi(fp);
         if (!func || !fi.is_open())
@@ -140,12 +148,25 @@ namespace zwn
         {
             std::string line_str;
             std::getline(fi, line_str);
-            bool is_continue = func(line_str);
+            bool is_continue = func(std::move(line_str));
             if (!is_continue)
             {
                 break;
             }
         }
+    }
+
+    std::vector<std::string> readFileAsLine(const std::string &fp)
+    {
+        std::vector<std::string> line_arr;
+        traverseFileByLine(
+            fp,
+            [&line_arr](const std::string &&str) -> bool
+            {
+                line_arr.push_back(str);
+                return true;
+            });
+        return line_arr;
     }
 
 } // namespace zwn
