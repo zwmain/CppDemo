@@ -6,6 +6,10 @@ ModernCpp：现代C++包括C++11、C++14、C++17。C++20待完善
 
 MyJson：C++ JSON实现方法
 
+MyUtils：常用工具库
+
+SocketStudy：socket学习
+
 ThreadPool：基于C++11的线程池，可以支持任何函数和返回值
 
 ThreadStudy：C++多线程基本知识学习
@@ -21,7 +25,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Win MSVC下需要手动指定源码编码类型
 if (MSVC)
-    add_compile_options("/source-charset:utf-8")
+    add_compile_options("/utf-8")
 endif()
 
 add_executable(${PROJECT_NAME} main.cpp)

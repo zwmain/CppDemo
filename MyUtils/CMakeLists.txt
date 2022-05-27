@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.18.0)
 
-project(ProjectName LANGUAGES CXX)
+project(Myutils LANGUAGES CXX)
 
 # 设置C++标准
 set(CMAKE_CXX_STANDARD 17)
