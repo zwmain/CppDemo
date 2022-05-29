@@ -3,6 +3,7 @@
 #define _UTILS_HPP_
 
 #include "../../../MyUtils/MyUtils.hpp"
+#include <iostream>
 
 namespace zwn {
 
@@ -13,6 +14,8 @@ namespace zwn {
  * @return 整数数组
  */
 std::vector<std::vector<int>> inputIntArr(const std::string& fp);
+
+void outputStrArr(const std::vector<std::string>& str_arr);
 
 std::vector<std::vector<int>> inputIntArr(const std::string& fp)
 {
@@ -28,6 +31,24 @@ std::vector<std::vector<int>> inputIntArr(const std::string& fp)
         res.push_back(std::move(num_arr));
     }
     return res;
+}
+
+void outputStrArr(const std::vector<std::string>& str_arr)
+{
+    bool is_first = true;
+    std::cout << '[';
+    for (auto& s : str_arr) {
+        if (is_first) {
+            std::cout << '"';
+            std::cout << s;
+            is_first = false;
+        } else {
+            std::cout << ",\"";
+            std::cout << s;
+        }
+        std::cout << '"';
+    }
+    std::cout << ']' << std::endl;
 }
 
 } // namespace zwn
