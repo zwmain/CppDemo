@@ -10,7 +10,7 @@ if (MSVC)
     add_compile_options("/source-charset:utf-8")
 endif()
 
-add_executable(${PROJECT_NAME} main.cpp ThreadPool.h)
+add_executable(${PROJECT_NAME} main.cpp ThreadPool.hpp)
 
 # 如果没有下面这个链接库，则会报错
 # undefined reference to `pthread_create'
