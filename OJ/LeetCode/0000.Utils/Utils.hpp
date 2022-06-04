@@ -55,6 +55,21 @@ std::vector<std::vector<int>> inputIntArr(const std::string& fp);
  */
 void outputStrArr(const std::vector<std::string>& str_arr);
 
+/**
+ * @brief 输入链表
+ *
+ * @param fp 文件路径
+ * @return 链表数组
+ */
+std::vector<ListNode*> inputList(const std::string& fp);
+
+/**
+ * @brief 清除链表
+ *
+ * @param list_arr 链表数组
+ */
+void destroyList(std::vector<ListNode*>& list_arr);
+
 // ----------------------------------------------------------------------------
 
 std::vector<std::vector<int>> inputIntArr(const std::string& fp)
@@ -89,6 +104,39 @@ void outputStrArr(const std::vector<std::string>& str_arr)
         std::cout << '"';
     }
     std::cout << ']' << std::endl;
+}
+
+std::vector<ListNode*> inputList(const std::string& fp)
+{
+    std::vector<ListNode*> res;
+    auto arrs = inputIntArr(fp);
+    for (auto& line : arrs) {
+        ListNode* p_node = nullptr;
+        ListNode* p_cur = nullptr;
+        for (int i : line) {
+            if (p_node) {
+                p_cur->next = new ListNode(i);
+                p_cur = p_cur->next;
+            } else {
+                p_node = new ListNode(i);
+                p_cur = p_node;
+            }
+        }
+        res.push_back(p_node);
+    }
+    return res;
+}
+
+void destroyList(std::vector<ListNode*>& list_arr)
+{
+    for (ListNode* p_node : list_arr) {
+        while (p_node) {
+            ListNode* d = p_node;
+            p_node = p_node->next;
+            delete d;
+        }
+    }
+    list_arr.clear();
 }
 
 } // namespace zwn
