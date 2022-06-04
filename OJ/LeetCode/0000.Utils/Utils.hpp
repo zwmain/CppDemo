@@ -70,6 +70,14 @@ std::vector<ListNode*> inputList(const std::string& fp);
  */
 void destroyList(std::vector<ListNode*>& list_arr);
 
+/**
+ * @brief 输入整数
+ *
+ * @param fp 文件路径
+ * @return 整数数组
+ */
+std::vector<int> inputInt(const std::string& fp);
+
 // ----------------------------------------------------------------------------
 
 std::vector<std::vector<int>> inputIntArr(const std::string& fp)
@@ -137,6 +145,16 @@ void destroyList(std::vector<ListNode*>& list_arr)
         }
     }
     list_arr.clear();
+}
+
+std::vector<int> inputInt(const std::string& fp)
+{
+    std::vector<int> res;
+    auto str_arr = readFileAsLine(fp);
+    for (auto& line : str_arr) {
+        res.push_back(std::stoi(line));
+    }
+    return res;
 }
 
 } // namespace zwn
