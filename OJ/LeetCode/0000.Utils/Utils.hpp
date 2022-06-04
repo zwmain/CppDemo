@@ -1,9 +1,42 @@
-// 刷题辅助工具库
+/**
+ * @file Utils.hpp
+ * @author zwmain
+ * @brief 刷题辅助工具库
+ * @version 1.0
+ * @date 2022-06-04
+ *
+ * @copyright Copyright (c) 2022 zwmain
+ *
+ */
 #ifndef _UTILS_HPP_
 #define _UTILS_HPP_
 
 #include "../../../MyUtils/MyUtils.hpp"
 #include <iostream>
+
+/**
+ * @brief 链表节点结构体
+ *
+ */
+struct ListNode {
+    int val;
+    ListNode* next;
+    ListNode()
+        : val(0)
+        , next(nullptr)
+    {
+    }
+    ListNode(int x)
+        : val(x)
+        , next(nullptr)
+    {
+    }
+    ListNode(int x, ListNode* next)
+        : val(x)
+        , next(next)
+    {
+    }
+};
 
 namespace zwn {
 
@@ -15,7 +48,14 @@ namespace zwn {
  */
 std::vector<std::vector<int>> inputIntArr(const std::string& fp);
 
+/**
+ * @brief 输出数组
+ *
+ * @param str_arr 字符串数组
+ */
 void outputStrArr(const std::vector<std::string>& str_arr);
+
+// ----------------------------------------------------------------------------
 
 std::vector<std::vector<int>> inputIntArr(const std::string& fp)
 {
