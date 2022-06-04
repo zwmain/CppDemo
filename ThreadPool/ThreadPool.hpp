@@ -1,4 +1,16 @@
-#pragma once
+/**
+ * @file ThreadPool.hpp
+ * @author zwmain(zwmain@outlook.com)
+ * @brief 线程池
+ * @version 1.0
+ * @date 2022-06-04
+ *
+ * @copyright Copyright (c) 2022 zwmain
+ *
+ */
+
+#ifndef _THREAD_POOL_HPP_
+#define _THREAD_POOL_HPP_
 
 #include <atomic>
 #include <condition_variable>
@@ -9,6 +21,8 @@
 #include <queue>
 #include <thread>
 #include <vector>
+
+namespace zwn {
 
 class ThreadPool {
 public:
@@ -157,3 +171,7 @@ std::future<typename std::invoke_result<F, Args...>::type> ThreadPool::addTask(F
     // 返回包裹返回值的future
     return res;
 }
+
+} // namespace zwn
+
+#endif

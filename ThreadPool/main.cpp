@@ -9,7 +9,7 @@ int test(int a)
 int main()
 {
     size_t sys_thread_size = std::thread::hardware_concurrency();
-    ThreadPool pool(sys_thread_size);
+    zwn::ThreadPool pool(sys_thread_size);
     std::cout << "线程池大小：" << pool.size() << std::endl;
 
     pool.start();
