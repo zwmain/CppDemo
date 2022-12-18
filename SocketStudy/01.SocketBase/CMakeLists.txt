@@ -1,4 +1,4 @@
-project(SocketBaseClient LANGUAGES CXX)
+project(SocketBase LANGUAGES CXX)
 
 # 设置C++标准
 set(CMAKE_CXX_STANDARD 17)
@@ -9,4 +9,6 @@ if (MSVC)
     add_compile_options("/source-charset:utf-8")
 endif()
 
-add_executable(${PROJECT_NAME} main.cpp)
+add_executable("client" client/main.cpp)
+
+add_executable("server" server/main.cpp)
