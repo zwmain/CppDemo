@@ -20,15 +20,41 @@ int socket(int af, int type, int protocol);
 
 ## bind()函数
 
+```c
+#include <sys/socket.h>
+int bind(int sockfd, const struct sockaddr *addr, socklen_t addrlen);
+
+```
+
 绑定一个套接字到某一个IP地址和端口上
 
 ## listen()函数
+
+```c
+#include <sys/socket.h>
+int listen(int sockfd, int backlog);
+
+```
 
 监听一个套接字
 
 ## accept()函数
 
+```c
+#include <sys/socket.h>
+int accept(int sockfd, struct sockaddr *addr, socklen_t *addrlen)
+
+```
+
 阻塞，直到接收到一个请求
+
+## connect()函数
+
+```c
+#include <sys/socket.h>
+int connect(int sockfd, const struct sockaddr *addr, socklen_t addrlen);
+
+```
 
 ## recv()函数
 
@@ -37,6 +63,36 @@ int socket(int af, int type, int protocol);
 ## close()函数
 
 关闭套接字
+
+## sockaddr结构体
+
+```c
+
+struct sockaddr {
+    sa_family_t sa_family;    // 地址族
+    char        sa_data[14];  // 端口2字节+IP地址4字节
+}
+
+```
+
+## sockaddr_in结构体
+
+```c
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <netinet/ip.h> /* superset of previous */
+
+struct sockaddr_in {
+    sa_family_t    sin_family; /* 地址族: AF_INET */
+    in_port_t      sin_port;   /* 网络字节序的端口 */
+    struct in_addr sin_addr;   /* IP地址 */
+};
+
+/* Internet address */
+struct in_addr {
+    uint32_t       s_addr;     /* 网络字节序的地址 */
+};
+```
 
 ## 地址转换
 
