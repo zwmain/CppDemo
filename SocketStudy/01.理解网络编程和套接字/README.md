@@ -159,6 +159,79 @@ int main(int argc, char* argv[])
 
 构建打电话套接字
 
+服务器端创建的套接字又称为服务器端套接字或监听(listening)套接字。
+接下来介绍的套接字是用于请求连接的客户端套接字。
+客户端套接字的创建过程比创建服务器端套接字简单，因此直接进行讲解。
+
+负责打电话（请求连接）的函数，如下所示：
+
+```c
+#include<sys/socket.h>
+int connect(int sockfd, struct sockaddr *serv_addr, socklen_t addrlen);
+// 成功时返回0，失败时返回-1。
+
+```
+
+客户端程序只有“调用socket函数创建套接字”和“调用connect函数向服务器端发送连接请求”这两个步骤，因此比服务器端简单。
+下面给出客户端，查看以下两项内容:第一，调用socket函数和connect函数;第二，与服务器端共同运行以收发字符串数据。
+
+```c++
+#include <arpa/inet.h>
+#include <cstring>
+#include <iostream>
+#include <string>
+#include <sys/socket.h>
+#include <unistd.h>
+
+int main(int argc, char* argv[])
+{
+    if (argc != 3) {
+        std::cout << "Usage: " << argv[0] << " IP port" << std::endl;
+        return 0;
+    }
+
+    // 调用socket创建套接字
+    int clntSock = socket(PF_INET, SOCK_STREAM, 0);
+    if (clntSock == -1) {
+        std::cout << "套接字创建失败！" << std::endl;
+        return 0;
+    }
+
+    // 生成服务器地址信息
+    sockaddr_in servAddr;
+    std::memset(&servAddr, 0, sizeof(servAddr));
+    servAddr.sin_family = AF_INET;
+    servAddr.sin_addr.s_addr = inet_addr(argv[1]);
+    servAddr.sin_port = htons(std::atoi(argv[2]));
+
+    // 连接到服务器
+    int stu = connect(clntSock, (sockaddr*)&servAddr, sizeof(servAddr));
+    if (stu == -1) {
+        close(clntSock);
+        std::cout << "connect 错误！" << std::endl;
+        return 0;
+    }
+
+    char msg[30] = { 0 };
+    int strLen = read(clntSock, msg, sizeof(msg) - 1);
+    if (strLen == -1) {
+        std::cout << "read 错误！" << std::endl;
+        return 0;
+    }
+
+    std::cout << msg << std::endl;
+
+    close(clntSock);
+
+    return 0;
+}
+
+
+
+```
+
+这样就编好了服务器端和客户端，相信各位会产生好多疑问(实际上不懂的内容比知道的更多)。
+接下来的几章将进行解答，请不要着急。
 
 
 

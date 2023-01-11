@@ -3,3 +3,5 @@ project("01" LANGUAGES CXX)
 
 add_executable(serv hello_server.cpp)
 
+add_executable(clnt hello_client.cpp)
+
