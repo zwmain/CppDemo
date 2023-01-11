@@ -2,7 +2,7 @@
 
 ## 理解网络编程和套接字
 
-网络编程和套接字概要
+**网络编程和套接字概要**
 
 网络编程就是编写程序使两台连网的计算机相互交换数据。这就是全部内容了吗?是的!网络编程要比想象中简单许多。
 那么，这两台计算机之间用什么传输数据呢?
@@ -78,7 +78,7 @@ int accept(int sockfd, struct sockaddr *addr, socklen_t *addrlen);
 
 记住并掌握这些步骤就相当于为套接字编程勾勒好了轮廓，后续章节会为此轮廓着色。
 
-编写"Hello World!"服务端
+**编写"Hello World!"服务端**
 
 服务器端(server)是能够受理连接请求的程序。
 下面构建服务器端以验证之前提到的函数调用过程，该服务器端收到连接请求后向请求者返回“Hello world!”答复。
@@ -264,7 +264,327 @@ ssize_t read(int fd, void *buf, size_t nbytes);
 
 ## 基于Windows的实现
 
-跳过
+Windows套接字（以下简称Winsock）大部分是参考BSD系列UNIX套接字设计的，所以很多地方都跟Linux套接字类似。因此，只需要更改Linux环境下编好的一部分网络程序内容，就能在Windows平台下运行。
+本书也会同时讲解Linux和Windows两大平台，这不会给大家增加负担，反而会减轻压力。
+
+**同时学习Linux和Windows的原因**
+
+大多数项目都在Linux系列的操作系统下开发服务器端，而多数客户端是在Windows平台下开发的。不仅如此，有时应用程序还需要在两个平台之间相互切换。
+因此，学习套接字编程的过程中，有必要兼顾Windows和Limux两大平台。另外，这两大平台下的套接字编程非常类似，如果把其中相似的部分放在一起讲解，将大大提高学习效率。
+这会不会增加学习负担？一点也不。只要理解好其中一个平台下的网络编程方法，就很容易通过分析差异掌握另一平台。
+
+**为 Windows 套接字编程设置头文件和库**
+
+- 导入头文件WinSock2.h
+- 链接ws2_32.lib库
+
+**Winsock 的初始化**
+
+进行Winsock编程时，首先必须调用WSAStartup函数，设置程序中用到的Winsock版本，并初始化相应版本的库。
+
+```c
+#include <winsock2.h>
+int WSAStartup(WORD wVersionRequested, LPWSADATA lpWSAData);
+// 成功时返回0，失败时返回非零的错误代码值。
+// wVersionRequested   程序员要用的Winsock版本信息。
+// lpWSAData           WSADATA结构体变量的地址值。
+
+```
+
+有必要给出上述两个参数的详细说明。先说第一个，Winsock中存在多个版本，应准备WORD 类型的（WORD是通过typedef声明定义的unsigned short类型）套接字版本信息，并传递给该函数的第一个参数wVersionRequested。
+若版本为1.2，则其中1是主版本号，2是副版本号，应传递0x0201。
+
+如前所述，高8位为副版本号，低8位为主版本号，以此进行传递。本书主要使用2.2版本，故应传递0x0202。
+不过，以字节为单位手动构造版本信息有些麻烦，借助MAKEWORD宏函数则能轻松构建WORD型版本信息。
+
+- MAKEWORD（1，2） //主版本为1，副版本为2，返回0x0201。
+- MAKEWORD（2，2） //主版本为2，副版本为2，返回0x0202。
+
+
+接下来讲解第二个参数lpWSADATA，此参数中需传入WSADATA型结构体变量地址（LPWSADATA是WSADATA的指针类型）。
+调用完函数后，相应参数中将填充已初始化的库信息。虽无特殊含义，但为了调用函数，必须传递WSADATA结构体变量地址。
+下面给出WSAStartup函数调用过程，这段代码几乎已成为Winsock编程的公式。
+
+```c
+int main(int argc, char* argv[])
+{
+    WSADATA wsaDAta;
+    // ...
+    if(WSAStartup(MAKEWORD(2,2), &wsaData)!=0) {
+        ErrorHandling("WSAStartup() error!");
+    }
+    // ...
+    return 0;
+}
+
+```
+
+前面已经介绍了Winsock相关库的初始化方法，接下来讲解如何注销该库——利用下面给出的函数。
+
+```c
+#include <winsock2.h>
+int wSACleanup(void);
+
+```
+
+成功时返回 0，失败时返回 SOCKET_ERROR。
+
+调用该函数时，Winsock相关库将归还Windows操作系统，无法再调用Winsock相关函数。从原则上讲，无需再使用Winsock函数时才调用该函数，但通常都在程序结束之前调用。
+
+## 基于Windows的套接字相关函数及示例
+
+本节介绍的Winsock函数与之前的Linux套接字相关函数相对应。既然只是介绍，就不做详细说明了，目的只在于让各位体会基于Linux和Windows的套接字函数之间的相似性。
+
+**基于Windows的套接字相关函数**
+
+首先介绍的函数与Linux下的socket函数提供相同功能。稍后讲解返回值类型SOCKET。
+
+```c
+#include <winsock2.h>
+SOCKET socket(int af, int type, int protocol);
+// 成功时返回套接字句柄，失败时返回INVALID_SOCKET。
+
+```
+
+下列函数与Linux的bind函数相同，调用其分配IP地址和端口号。
+
+```c
+#include<winsock2.h>
+int bind(SOCKET s, const struct sockaddr *name, int namelen);
+// 成功时返回0，失败时返回SOCKETERROR。
+
+```
+
+下列函数与Linux的listen函数相同，调用其使套接字可接收客户端连接
+
+```c
+#include <winsock2.h>
+intlisten(SOCKET s, int backlog);
+// 成功时返回0，失败时返回SOCKETERROR。
+
+```
+
+下列函数与Linux的accept函数相同，调用其受理客户端连接请求。
+
+```c
+#include<winsock2.h>
+SOCKET accept(SOCKET s, struct sockaddr *addr, int *addrlen);
+// 成功时返回套接字句柄，失败时返回INVALID_SOCKET。
+
+```
+
+下列函数与Linux的connect函数相同，调用其从客户端发送连接请求。
+
+```c
+#include<winsock2.h>
+int connect(SOCKET s, const struct sockaddr *name, int namelen);
+// 成功时返回0，失败时返回SOCKETERROR。
+
+```
+
+最后这个函数在关闭套接字时调用。Linux中，关闭文件和套接字时都会调用close函数;而Windows中有专门用来关闭套接字的函数。
+
+```c
+#include<winsock2.h>
+int closesocket(SOCKET s);
+// 成功时返回0，失败时返回SOCKETERROR。
+
+```
+
+以上就是基于Windows的套接字相关函数，虽然返回值和参数与Linux函数有所区别，但具有相同功能的函数名是一样的。正是这些特点使跨越两大操作系统平台的网络编程更加简单。
+
+**Windows中的文件句柄和套接字句柄**
+
+Linux内部也将套接字当作文件，因此，不管创建文件还是套接字都返回文件描述符。之前也通过示例介绍了文件描述符返回及编号的过程。
+Windows中通过调用系统函数创建文件时，返回“句柄”（handle），换言之，Windows中的句柄相当于Linux中的文件描述符。
+只不过Windows 中要区分文件句柄和套接字句柄。虽然都称为"句柄"，但不像Linux那样完全一致。文件句柄相关函数与套接字句柄相关函数是有区别的，这一点不同于Linux文件描述符。
+
+既然对句柄有了一定理解，接下来再观察基于Windows的套接字相关函数，这将加深各位对SOCKET类型的参数和返回值的理解。
+的确！这就是为了保存套接字句柄整型值的新数据类型，它由typedef声明定义。回顾socket、listen和accept等套接字相关函数，则更能体会到与Linux中套接字相关函数的相似性。
+
+有些程序员可能会问："既然Winsock是以UNIX、Linux系列的BSD套接字为原型设计的，为什么不照搬过来，而是存在一定差异呢？
+"有人认为这是微软为了防止UNIX、Linux服务器端直接移植到Windows而故意为之。从网络程序移植性角度上看，这也是可以理解的。
+但我有不同意见。从本质上说，两种操作系统内核结构上存在巨大差异，而依赖于操作系统的代码实现风格也不尽相同，连Windows程序员给变量命名的方式也不同于Linux程序员。
+从各方面考虑，保持这种差异性就显得比较自然。因此我个人认为，Windows套接字与BSD系列的套接字编程方式有所不同是为了保持这种自然差异性。
+
+**创建基于Windows的服务器端和客户端**
+
+接下来将之前基于Linux的服务器端与客户端示例转化到Windows平台。
+目前想完全理解这些代码有些困难，我们只需验证套接字相关函数的调用过程、套接字库的初始化与注销过程即可。先介绍服务器端示例。
+
+```c++
+#include <WinSock2.h>
+#include <cstring>
+#include <iostream>
+#include <string>
+
+int main(int argc, char* argv[])
+{
+    if (argc != 2) {
+        std::cout << "Usage: " << argv[0] << " port" << std::endl;
+        return 0;
+    }
+
+    // 初始化库
+    WSADATA wsaData;
+    int stu = WSAStartup(MAKEWORD(2, 2), &wsaData);
+    if (stu != 0) {
+        std::cout << "WSAStartup 错误：" << stu << std::endl;
+        return 0;
+    }
+
+    // 创建socket
+    SOCKET servSock = socket(PF_INET, SOCK_STREAM, 0);
+    if (servSock == INVALID_SOCKET) {
+        std::cout << "socket 错误" << std::endl;
+        return 0;
+    }
+
+    // 初始化服务器地址信息
+    sockaddr_in servAddr;
+    std::memset(&servAddr, 0, sizeof(servAddr));
+    servAddr.sin_family = AF_INET;
+    servAddr.sin_addr.s_addr = htonl(INADDR_ANY);
+    servAddr.sin_port = htons(std::atoi(argv[1]));
+
+    // 调用bind函数绑定地址信息
+    stu = bind(servSock, (sockaddr*)&servAddr, sizeof(servAddr));
+    if (stu == SOCKET_ERROR) {
+        closesocket(servSock);
+        std::cout << "bind 错误" << std::endl;
+        return 0;
+    }
+
+    // 调用listen函数，进入监听状态
+    stu = listen(servSock, 5);
+    if (stu == SOCKET_ERROR) {
+        closesocket(servSock);
+        std::cout << "listen 错误" << std::endl;
+        return 0;
+    }
+
+    sockaddr_in clntAddr;
+    int clntAddrSize = sizeof(clntAddr);
+    // 接收请求
+    SOCKET clntSock = accept(servSock, (sockaddr*)&clntAddr, &clntAddrSize);
+    if (clntSock == INVALID_SOCKET) {
+        closesocket(servSock);
+        std::cout << "accept 错误" << std::endl;
+        return 0;
+    }
+
+    std::string msg = "Hello World!";
+    send(clntSock, msg.c_str(), msg.size(), 0);
+
+    closesocket(clntSock);
+    closesocket(servSock);
+
+    // 清理库
+    WSACleanup();
+
+    return 0;
+}
+
+```
+
+可以看出，除了Winsock库的初始化和注销相关代码、数据类型信息外，其余部分与Linux环境下的示例并无区别。
+希望各位阅读这部分代码时与之前的Linux服务器端进行逐行比较。接下来介绍与此示例同步的客户端代码。
+
+```c++
+#include <WinSock2.h>
+#include <cstring>
+#include <iostream>
+#include <string>
+
+int main(int argc, char* argv[])
+{
+    if (argc != 3) {
+        std::cout << "Usage: " << argv[0] << " IP port" << std::endl;
+        return 0;
+    }
+
+    // 初始化库
+    WSADATA wsaData;
+    int stu = WSAStartup(MAKEWORD(2, 2), &wsaData);
+    if (stu != 0) {
+        std::cout << "WSAStartup 错误：" << stu << std::endl;
+        return 0;
+    }
+
+    // 创建socket
+    SOCKET clntSock = socket(PF_INET, SOCK_STREAM, 0);
+    if (clntSock == INVALID_SOCKET) {
+        std::cout << "socket 错误" << std::endl;
+        return 0;
+    }
+
+    // 初始化服务端地址信息
+    sockaddr_in servAddr;
+    std::memset(&servAddr, 0, sizeof(servAddr));
+    servAddr.sin_family = AF_INET;
+    servAddr.sin_addr.s_addr = inet_addr(argv[1]);
+    servAddr.sin_port = htons(std::atoi(argv[2]));
+
+    // 连接到服务端
+    stu = connect(clntSock, (sockaddr*)&servAddr, sizeof(servAddr));
+    if (stu == SOCKET_ERROR) {
+        closesocket(clntSock);
+        std::cout << "connect 错误" << std::endl;
+        return 0;
+    }
+
+    char msg[30] = { 0 };
+    int strLen = recv(clntSock, msg, sizeof(msg) - 1, 0);
+    if (strLen == -1) {
+        closesocket(clntSock);
+        std::cout << "recv 错误" << std::endl;
+        return 0;
+    }
+
+    std::cout << "接收：" << msg << std::endl;
+    closesocket(clntSock);
+
+    WSACleanup();
+
+    return 0;
+}
+
+```
+
+**基于Windows的I/O函数**
+
+Linux中套接字也是文件，因而可以通过文件I/O函数read和write进行数据传输。
+而Windows中则有些不同Windows严格区分文件I/0函数和套接字I/0函数。下面介绍Winsock数据传输函数。
+
+```c
+#include<winsock2.h>
+int send(SOCKET s, const char *buf, int len, int flags);
+// 成功时返回传输字节数，失败时返回SOCKETERROR。
+// s        表示数据传输对象连接的套接字句柄值。
+// buf      保存待传输数据的缓冲地址值。
+// len      要传输的字节数。
+// flags    传输数据时用到的多种选项信息。
+
+```
+
+此函数与Linux的write函数相比，只是多出了最后的flags参数。后续章节中将给出该参数的详细说明,在此之前只需传递0,表示不设置任何选项。
+但有一点需要注意,send函数并非Windows独有。Linux中也有同样的函数，它也来自于BSD套接字。只不过我在Linux相关示例中暂时只使用read、write函数，为了强调Linux环境下文件I/0和套接字I/0相同。
+下面介绍与send函数对应的recv函数。
+
+```c
+#include<winsock2.h>
+int recv(SOCKET s, const char *buf, int len, int flags);
+// 成功时返回接收的字节数(收到EOF时为0)，失败时返回SOCKETERROR。
+// s        表示数据接收对象连接的套接字句柄值。
+// buf      保存接收数据的缓冲地址值。
+// len      能够接收的最大字节数。
+// flags    接收数据时用到的多种选项信息。
+
+```
+
+我只是在Windows环境下提前介绍了send、recv函数，以后的Linux示例中也会涉及。
+请不要误认为Linux中的read、write函数就是对应于Windows的send、recv函数。
+另外，之前的程序代码中也给出了send、recv函数调用过程，故不再另外给出相关示例。
 
 
 
