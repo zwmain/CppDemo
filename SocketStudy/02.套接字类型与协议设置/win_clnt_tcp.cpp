@@ -41,11 +41,17 @@ int main(int argc, char* argv[])
     }
 
     char msg[30] = { 0 };
-    int strLen = recv(clntSock, msg, sizeof(msg) - 1, 0);
-    if (strLen == -1) {
-        closesocket(clntSock);
-        std::cout << "recv 错误" << std::endl;
-        return 0;
+    int strLen = 0;
+    int readLen = 1;
+    int idx = 0;
+    while (readLen) {
+        readLen = recv(clntSock, &msg[idx++], 1, 0);
+        if (readLen == -1) {
+            closesocket(clntSock);
+            std::cout << "recv 错误" << std::endl;
+            return 0;
+        }
+        strLen += readLen;
     }
 
     std::cout << "接收：" << msg << std::endl;

@@ -145,6 +145,173 @@ int udp_socket = socket(PF_INET, SOCK_DGRAM, IPPROTO_UDP);
 
 为验证这一点，需要让write函数的调用次数不同于read函数的调用次数。因此，在客户端中分多次调用read函数以接收服务器端发送的全部数据。
 
+```c++
+#include <arpa/inet.h>
+#include <cstring>
+#include <iostream>
+#include <string>
+#include <sys/socket.h>
+#include <unistd.h>
+
+int main(int argc, char* argv[])
+{
+    if (argc != 3) {
+        std::cout << "Usage: " << argv[0] << " IP port" << std::endl;
+        return 0;
+    }
+
+    // 调用socket创建套接字
+    int clntSock = socket(PF_INET, SOCK_STREAM, 0);
+    if (clntSock == -1) {
+        std::cout << "套接字创建失败！" << std::endl;
+        return 0;
+    }
+
+    // 生成服务器地址信息
+    sockaddr_in servAddr;
+    std::memset(&servAddr, 0, sizeof(servAddr));
+    servAddr.sin_family = AF_INET;
+    servAddr.sin_addr.s_addr = inet_addr(argv[1]);
+    servAddr.sin_port = htons(std::atoi(argv[2]));
+
+    // 连接到服务器
+    int stu = connect(clntSock, (sockaddr*)&servAddr, sizeof(servAddr));
+    if (stu == -1) {
+        close(clntSock);
+        std::cout << "connect 错误！" << std::endl;
+        return 0;
+    }
+
+    char msg[30] = { 0 };
+    int strLen = 0;
+    int readLen = 1;
+    int idx = 0;
+    // 修改读取方式，每次只读取1个字节
+    while (readLen) {
+        readLen = read(clntSock, &msg[idx++], 1);
+        if (readLen == -1) {
+            std::cout << "read 错误！" << std::endl;
+            return 0;
+        }
+        strLen += readLen;
+    }
+
+    std::cout << "接收数据：" << msg << std::endl;
+
+    close(clntSock);
+
+    return 0;
+}
+
+
+```
+
+
+## Windows平台下的实现及验证
+
+前面讲过的套接字类型及传输特性与操作系统无关。Windows平台下的实现方式也类似，不需要过多说明，只需稍加了解socket函数返回类型即可。
+
+**Windows 操作系统的socket函数**
+
+Windows的函数名和参数名都与Linux平台相同，只是返回值类型稍有不同。再次给出socket 函数的声明。
+
+```c
+#include <winsock2.h>
+SOCKET socket(int af, int type, int protocol);
+// 成功时返回socket 句柄，失败时返回INVALID_SOCKET。
+
+```
+
+该函数的参数种类及含义与Linux的socket函数完全相同，故省略，只讨论返回值类型。
+可以看出返回值类型为SOCKET，此结构体用来保存整数型套接字句柄值。
+实际上，socket函数返回整数型数据，因此可以通过int型变量接收，就像在Linux中做的一样。
+但考虑到以后的扩展性，定义为SOCKET数据类型，希望各位也使用SOCKET结构体变量保存套接字句柄，这也是微软希望看到的。
+以后即可将SOCKET视作保存套接字句柄的一个数据类型。
+
+同样，发生错误时返回INVALID_SOCKET，只需将其理解为提示错误的常数即可。其实际值为-1，但值是否为-1并不重要，除非编写如下代码。
+
+```c
+SOCKET soc = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
+if(soc == -1)
+    ErrorHandling("...");
+
+```
+
+如果这样编写代码，那么微软定义的INVALID_SOCKET常数将失去意义！应该如下编写，这样，即使日后微软更改INVALID_SOCKET常数值，也不会发生问题。
+
+```c
+SOCKET soc = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
+if(soc == INVALID_SOCKET)
+    ErrorHandling("...");
+
+```
+
+```c++
+#include <WinSock2.h>
+#include <cstring>
+#include <iostream>
+#include <string>
+
+int main(int argc, char* argv[])
+{
+    if (argc != 3) {
+        std::cout << "Usage: " << argv[0] << " IP port" << std::endl;
+        return 0;
+    }
+
+    // 初始化库
+    WSADATA wsaData;
+    int stu = WSAStartup(MAKEWORD(2, 2), &wsaData);
+    if (stu != 0) {
+        std::cout << "WSAStartup 错误：" << stu << std::endl;
+        return 0;
+    }
+
+    // 创建socket
+    SOCKET clntSock = socket(PF_INET, SOCK_STREAM, 0);
+    if (clntSock == INVALID_SOCKET) {
+        std::cout << "socket 错误" << std::endl;
+        return 0;
+    }
+
+    // 初始化服务端地址信息
+    sockaddr_in servAddr;
+    std::memset(&servAddr, 0, sizeof(servAddr));
+    servAddr.sin_family = AF_INET;
+    servAddr.sin_addr.s_addr = inet_addr(argv[1]);
+    servAddr.sin_port = htons(std::atoi(argv[2]));
+
+    // 连接到服务端
+    stu = connect(clntSock, (sockaddr*)&servAddr, sizeof(servAddr));
+    if (stu == SOCKET_ERROR) {
+        closesocket(clntSock);
+        std::cout << "connect 错误" << std::endl;
+        return 0;
+    }
+
+    char msg[30] = { 0 };
+    int strLen = 0;
+    int readLen = 1;
+    int idx = 0;
+    while (readLen) {
+        readLen = recv(clntSock, &msg[idx++], 1, 0);
+        if (readLen == -1) {
+            closesocket(clntSock);
+            std::cout << "recv 错误" << std::endl;
+            return 0;
+        }
+        strLen += readLen;
+    }
+
+    std::cout << "接收：" << msg << std::endl;
+    closesocket(clntSock);
+
+    WSACleanup();
+
+    return 0;
+}
+
+```
 
 
 
