@@ -35,13 +35,20 @@ int main(int argc, char* argv[])
     }
 
     char msg[30] = { 0 };
-    int strLen = read(clntSock, msg, sizeof(msg) - 1);
-    if (strLen == -1) {
-        std::cout << "read 错误！" << std::endl;
-        return 0;
+    int strLen = 0;
+    int readLen = 1;
+    int idx = 0;
+    // 修改读取方式，每次只读取1个字节
+    while (readLen) {
+        readLen = read(clntSock, &msg[idx++], 1);
+        if (readLen == -1) {
+            std::cout << "read 错误！" << std::endl;
+            return 0;
+        }
+        strLen += readLen;
     }
 
-    std::cout << msg << std::endl;
+    std::cout << "接收数据：" << msg << std::endl;
 
     close(clntSock);
 
