@@ -233,6 +233,38 @@ int main(int argc, char* argv[])
 这样就编好了服务器端和客户端，相信各位会产生好多疑问(实际上不懂的内容比知道的更多)。
 接下来的几章将进行解答，请不要着急。
 
+## 基于Linux的文件操作
+
+对于文件操作，主要使用C++标准库的方法。
+
+这里主要学习`read`和`write`函数。
+
+```c
+#include<unistd.h>
+ssize_t write(int fd, const void *buf, size_t nbytes);
+// 成功时返回写入的字节数，失败时返回-1。
+// fd     显示数据传输对象的文件描述符。
+// buf    保存要传输数据的缓冲地址值。
+// nbytes 要传输数据的字节数。
+
+```
+
+此函数定义中，`size_t`是通过typedef声明的unsigned int类型。
+对`ssize_t`来说，`size_t`前面多加的s代表signed，即`ssize_t`是通过typedef声明的signed int类型。
+
+```c
+#include <unistd.h>
+ssize_t read(int fd, void *buf, size_t nbytes);
+// 成功时返回接收的字节数(但遇到文件结尾则返回0)，失败时返回-1。
+// fd     显示数据接收对象的文件描述符。
+// buf    保存要接收数据的缓冲地址值。
+// nbytes 要接收数据的字节数。
+
+```
+
+## 基于Windows的实现
+
+跳过
 
 
 
