@@ -327,6 +327,43 @@ int  inet_aton(const  char * string, struct in_addr * addr);
 而inet_aton函数则不需此过程。原因在于，若传递in_addr结构体变量地址值，函数会自动把结果填入该结构体变量。
 通过示例了解inet_aton函数调用过程。
 
+```c++
+#include <arpa/inet.h>
+#include <iostream>
+#include <string>
+
+int main(int argc, char* argv[])
+{
+    std::string addr = "127.232.124.79";
+    sockaddr_in addrInet;
+    int stu = inet_aton(addr.c_str(), &addrInet.sin_addr);
+    if (stu) {
+        std::cout << "网络字节序的整数地址：" << addrInet.sin_addr.s_addr << std::endl;
+    } else {
+        std::cout << "inet_aton 错误" << std::endl;
+    }
+
+    return 0;
+}
+
+
+```
+
+上述运行结果无关紧要，更重要的是大家要熟练掌握该函数的调用方法。
+最后再介绍一个与inet_aton函数正好相反的函数，此函数可以把网络字节序整数型IP地址转换成我们熟悉的字符串形式。
+
+```c++
+#include <arpa/inet.h>
+char * inet_ntoa(struct in_addr adr);
+// 成功时返回转换的字符串地址值，失败时返回-1。
+
+```
+
+该函数将通过参数传入的整数型IP地址转换为字符串格式并返回。但调用时需小心，返回值类型为char指针。
+返回字符串地址意味着字符串已保存到内存空间，但该函数未向程序员要求分配内存，而是在内部申请了内存并保存了字符串。
+也就是说，调用完该函数后，应立即将字符串信息复制到其他内存空间。因为，若再次调用inet_ntoa函数，则有可能覆盖之前保存的字符串信息。
+总之，再次调用inet_ntoa函数前返回的字符串地址值是有效的。若需要长期保存，则应将字符串复制到其他内存空间。下面给出该函数调用示例。
+
 
 
 ## 基于Windows的实现
