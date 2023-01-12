@@ -281,6 +281,52 @@ in_addr_t inet_addr(const char * string);
 如果向该函数传递类似"211.214.107.99"的点分十进制格式的字符串，它会将其转换为32位整数型数据并返回。
 当然，该整数型值满足网络字节序。另外，该函数的返回值类型in_addr_t在内部声明为32位整数型。下列示例表示该函数的调用过程。
 
+```c++
+#include <arpa/inet.h>
+#include <iostream>
+#include <string>
+
+int main(int argc, char* argv[])
+{
+    std::string addr1 = "1.2.3.4";
+    unsigned long int convAddr = inet_addr(addr1.c_str());
+    if (convAddr == INADDR_NONE) {
+        std::cout << "Address1 error!" << std::endl;
+    } else {
+        std::cout << "网络字节序的整数地址1：" << convAddr << std::endl;
+    }
+
+    std::string addr2 = "1.2.3.256";
+    convAddr = inet_addr(addr2.c_str());
+    if (convAddr == INADDR_NONE) {
+        std::cout << "Address2 error!" << std::endl;
+    } else {
+        std::cout << "网络字节序的整数地址2：" << convAddr << std::endl;
+    }
+
+    return 0;
+}
+
+
+```
+
+从运行结果可以看出，inet_addr函数不仅可以把IP地址转成32位整数型，而且可以检测无效的IP地址。另外，从输出结果可以验证确实转换为网络字节序。
+
+inet_aton函数与inet_addr函数在功能上完全相同，也将字符串形式IP地址转换为32位网络字节序整数并返回。只不过该函数利用了in_addr结构体，且其使用频率更高。
+
+```c++
+#include <arpa/inet.h>
+int  inet_aton(const  char * string, struct in_addr * addr);
+// 成功时返回1（true），失败时返回0（false）
+// string   含有需转换的IP地址信息的字符串地址值。
+// addr     将保存转换结果的in_addr结构体变量的地址值。
+
+```
+
+实际编程中若要调用inet_addr函数，需将转换后的IP地址信息代入sockaddr_in结构体中声明的in_addr结构体变量。
+而inet_aton函数则不需此过程。原因在于，若传递in_addr结构体变量地址值，函数会自动把结果填入该结构体变量。
+通过示例了解inet_aton函数调用过程。
+
 
 
 ## 基于Windows的实现
