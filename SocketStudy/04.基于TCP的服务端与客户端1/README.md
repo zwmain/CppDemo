@@ -281,11 +281,109 @@ int main(int argc, char* argv[])
 
 然后进入下一个循环，接收新的请求。
 
+回声客户端代码：
+
+```c++
+#include <arpa/inet.h>
+#include <cstring>
+#include <iostream>
+#include <string>
+#include <sys/socket.h>
+#include <unistd.h>
+
+constexpr size_t BUF_SIZE = 1024;
+
+int main(int argc, char* argv[])
+{
+    if (argc != 3) {
+        std::cout << "Usage: " << argv[0] << " IP port" << std::endl;
+        return 0;
+    }
+
+    // 创建套接字
+    int clntSock = socket(PF_INET, SOCK_STREAM, 0);
+    if (clntSock == -1) {
+        std::cout << "socket 错误" << std::endl;
+        return 0;
+    }
+
+    // 初始化服务器地址信息
+    sockaddr_in servAdr;
+    servAdr.sin_family = AF_INET;
+    servAdr.sin_addr.s_addr = inet_addr(argv[1]);
+    servAdr.sin_port = htons(std::atoi(argv[2]));
+
+    // 连接到服务器
+    int stu = connect(clntSock, (sockaddr*)&servAdr, sizeof(servAdr));
+    if (stu == -1) {
+        close(clntSock);
+        std::cout << "connect 错误" << std::endl;
+        return 0;
+    }
+
+    char buf[BUF_SIZE] = { 0 };
+
+    while (true) {
+        std::cout << "输入消息：";
+        std::string msg;
+        std::cin >> msg;
+        if (msg == "Q" || msg == "q") {
+            break;
+        }
+
+        write(clntSock, msg.c_str(), msg.size());
+        int strLen = read(clntSock, buf, BUF_SIZE - 1);
+        buf[strLen] = 0;
+        std::cout << "服务端消息：" << buf << std::endl;
+    }
+
+    close(clntSock);
+    return 0;
+}
+
+
+```
+
+我们编写的回声服务器端（客户端以字符串为单位传递数据。理解这一点后再观察echo_client.c 第45行和第46行。各位若已完全掌握了之前讲过的TCP，就会意识到这2行代码不太适合做字符串单位的回声。
+
+回声客户端存在的问题
+
+代码有个错误假设：
+
+"每次调用read、write函数时都会以字符串为单位执行实际的I/O操作。"
+
+当然，每次调用write函数都会传递1个字符串，因此这种假设在某种程度上也算合理。但大家还记得第2章中"TCP不存在数据边界"的内容吗？上述客户端是基于TCP的，因此，多次调用write函数传递的字符串有可能一次性传递到服务器端。此时客户端有可能从服务器端收到多个字符串，这不是我们希望看到的结果。还需考虑服务器端的如下情况：
+
+“字符串太长，需要分2个数据包发送！”
+
+那样客户端就无法读完数据
+
+服务器端希望通过调用1次write函数传输数据，但如果数据太大，操作系统就有可能把数据分成多个数据包发送到客户端。另外，在此过程中，客户端有可能在尚未收到全部数据包时就调用read函数。
+
+所有这些问题都源自TCP的数据传输特性。那该如何解决呢？答案请见第5章。
+
+“但上述示例不是正常运转了吗？”
+
+当然，我们的回声服务器端/客户端给出的结果是正确的。但这只是运气好罢了！只是因为收发的数据小，而且运行环境为同一台计算机或相邻的两台计算机，所以没发生错误，可实际上仍存在发生错误的可能。
+
+
+
 
 
 ## 基于Windows的实现
 
+随着本书学习的深入，Windows和Linux的平台差异将愈加明显。但至少现在还不大，所以很容易将Linux示例移植到Windows平台。
 
+基于 Windows 的回声服务器端
+
+为了将Linux平台下的示例转化成Windows平台示例，需要记住以下4点。
+
+- 通过WSAStartup、WSACleanup函数初始化并清除套接字相关库。
+- 把数据类型和变量名切换为Windows风格。
+- 数据传输中用recv、send函数而非read、write函数。
+- 关闭套接字时用closesocket函数而非close函数。
+
+接下来给出基于Windows的回声服务器端。只需更改如上4点，故省略。
 
 
 
