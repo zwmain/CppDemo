@@ -164,6 +164,122 @@ int connect(int sock, struct sockaddr * servaddr, socklen_t addrlen);
 
 ## 实现选代服务器端/客户端
 
+本节编写回声(echo)服务器端/客户端。顾名思义，服务器端将客户端传输的字符串数据原封不动地传回客户端，就像回声一样。在此之前，需要先解释一下迭代服务器端。
+
+实现迭代服务器端
+
+之前讨论的Hello world服务器端处理完1个客户端连接请求即退出，连接请求等待队列实际没有太大意义。但这并非我们想象的服务器端。设置好等待队列的大小后，应向所有客户端提供服务。如果想继续受理后续的客户端连接请求，应怎样扩展代码?最简单的办法就是插人循环语句反复调用accept函数
+
+调用accept函数后，紧接着调用IO相关的read、write函数，然后调用close函数。这并非针对服务器端套接字，而是针对accept函数调用时创建的套接字。
+
+调用close函数就意味着结束了针对某一客户端的服务。此时如果还想服务于其他客户端，就要重新调用accept函数。
+
+“这算什么呀?又不是银行窗口，好歹也是个服务器端，难道同一时刻只能服务于-个客户端吗?
+
+是的!同一时刻确实只能服务于一个客户端。将来学完进程和线程后，就可以编写同时服务多个客户端的服务器端了。目前只能做到这一步，虽然很遗憾，但请各位不要心急。
+
+迭代回声服务器端/客户端
+
+前面讲的就是迭代服务器端。即使服务器端以迭代方式运转，客户端代码亦无太大区别。接下来创建迭代回声服务器端及与其配套的回声客户端。首先整理一下程序的基本运行方式。
+
+- 服务器端在同一时刻只与一个客户端相连，并提供回声服务
+- 服务器端依次向5个客户端提供服务并退出
+- 客户端接收用户输人的字符串并发送到服务器端
+- 服务器端将接收的字符串数据传回客户端，即“回声”
+- 服务器端与客户端之间的字符串回声一直执行到客户端输入0为止。
+
+首先介绍满足以上要求的回声服务器端代码。希望各位注意观察accept函数的循环调用过程。
+
+```c++
+#include <arpa/inet.h>
+#include <cstring>
+#include <iostream>
+#include <string>
+#include <sys/socket.h>
+#include <unistd.h>
+
+constexpr size_t BUF_SIZE = 1024;
+
+int main(int argc, char* argv[])
+{
+    if (argc != 2) {
+        std::cout << "Usage: " << argv[0] << " port" << std::endl;
+        return 0;
+    }
+
+    // 创建套接字
+    int servSock = socket(PF_INET, SOCK_STREAM, 0);
+    if (servSock == -1) {
+        std::cout << "socket 错误！" << std::endl;
+        return 0;
+    }
+
+    // 初始化地址信息
+    sockaddr_in servAdr;
+    std::memset(&servAdr, 0, sizeof(servAdr));
+    servAdr.sin_family = AF_INET;
+    servAdr.sin_addr.s_addr = htonl(INADDR_ANY);
+    servAdr.sin_port = htons(std::atoi(argv[1]));
+
+    // 绑定套接字地址信息
+    int stu = bind(servSock, (sockaddr*)&servAdr, sizeof(servAdr));
+    if (stu == -1) {
+        close(servSock);
+        std::cout << "bind 错误！" << std::endl;
+        return 0;
+    }
+
+    // 进入监听状态
+    stu = listen(servSock, 5);
+    if (stu == -1) {
+        close(servSock);
+        std::cout << "listen 错误！" << std::endl;
+        return 0;
+    }
+
+    char buf[BUF_SIZE] = { 0 };
+
+    // 循环接收请求，只接收5次
+    for (int i = 0; i < 5; ++i) {
+        sockaddr_in clntAdr;
+        socklen_t szClntAdr = sizeof(clntAdr);
+        int clntSock = accept(servSock, (sockaddr*)&clntAdr, &szClntAdr);
+
+        if (stu == -1) {
+            std::cout << "第" << i << "个客户端"
+                      << "accept 错误！" << std::endl;
+            continue;
+        } else {
+            std::string adrStr = inet_ntoa(clntAdr.sin_addr);
+            std::cout << "接收第" << i << "个客户端"
+                      << ":" << adrStr << std::endl;
+        }
+
+        int strLen = 0;
+        do {
+            strLen = read(clntSock, buf, BUF_SIZE);
+            if (strLen == -1) {
+                std::cout << "第" << i << "个客户端 read 错误" << std::endl;
+                break;
+            }
+            write(clntSock, buf, strLen);
+        } while (strLen != 0);
+
+        close(clntSock);
+        std::cout << "第" << i << "个客户端通信完毕" << std::endl;
+    }
+
+    close(servSock);
+
+    return 0;
+}
+
+
+```
+
+在运行过程中，同时只能处理一个客户端，直到客户端断开连接，read才会返回0，进而退出读取逻辑，关闭客户端套接字。
+
+然后进入下一个循环，接收新的请求。
 
 
 
