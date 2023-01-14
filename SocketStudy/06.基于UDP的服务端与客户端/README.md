@@ -91,6 +91,172 @@ ssize_t recvfrom(int sock, void *buff, size_t nbytes, int flags, struct sockaddr
 
 下面结合之前的内容实现回声服务器。需要注意的是，UDP不同于TCP，不存在请求连接和受理过程，因此在某种意义上无法明确区分服务器端和客户端。只是因其提供服务而称为服务器端，希望各位不要误解。
 
+```c++
+#include <arpa/inet.h>
+#include <cstring>
+#include <iostream>
+#include <string>
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <unistd.h>
+
+constexpr size_t BUF_SIZE = 1024;
+
+int main(int argc, char* argv[])
+{
+    if (argc != 2) {
+        std::cout << "Usage: " << argv[0] << std::endl;
+        return 0;
+    }
+
+    // 创建UDP套接字
+    int servSock = socket(PF_INET, SOCK_DGRAM, 0);
+    if (servSock == -1) {
+        std::cout << "socket 错误" << std::endl;
+        return 0;
+    }
+
+    // 初始化UDP服务端地址信息
+    sockaddr_in servAdr;
+    std::memset(&servAdr, 0, sizeof(servAdr));
+    servAdr.sin_family = AF_INET;
+    servAdr.sin_addr.s_addr = htonl(INADDR_ANY);
+    servAdr.sin_port = htons(std::atoi(argv[1]));
+
+    // 绑定UDP地址信息
+    int stu = bind(servSock, (sockaddr*)&servAdr, sizeof(servAdr));
+    if (stu == -1) {
+        close(servSock);
+        std::cout << "bind 错误" << std::endl;
+        return 0;
+    }
+
+    char msg[BUF_SIZE] = { 0 };
+
+    while (true) {
+        sockaddr_in clntAdr;
+        socklen_t szClntAdr = sizeof(clntAdr);
+        int strLen = recvfrom(servSock, msg, BUF_SIZE, 0, (sockaddr*)&clntAdr, &szClntAdr);
+        if (strLen == -1) {
+            std::cout << "recvfrom 错误" << std::endl;
+            continue;
+        }
+        std::string adrStr = inet_ntoa(clntAdr.sin_addr);
+        msg[strLen] = 0;
+        std::cout << "收到客户端" << adrStr << "的消息：" << msg << std::endl;
+        sendto(servSock, msg, strLen, 0, (sockaddr*)&clntAdr, szClntAdr);
+    }
+
+    close(servSock);
+
+    return 0;
+}
+
+
+```
+
+接下来介绍与上述服务器端协同工作的客户端。这部分代码与TCP客户端不同，不存在connect函数调用。
+
+```c++
+#include <arpa/inet.h>
+#include <cstring>
+#include <iostream>
+#include <string>
+#include <sys/socket.h>
+#include <unistd.h>
+
+constexpr size_t BUF_SIZE = 1024;
+
+int main(int argc, char* argv[])
+{
+    if (argc != 3) {
+        std::cout << "Usage: " << argv[0] << " IP port" << std::endl;
+        return 0;
+    }
+
+    // 创建UDP套接字
+    int clntSock = socket(PF_INET, SOCK_DGRAM, 0);
+    if (clntSock == -1) {
+        std::cout << "socket 错误" << std::endl;
+        return 0;
+    }
+
+    // 初始化目标服务端地址信息
+    sockaddr_in servAdr;
+    std::memset(&servAdr, 0, sizeof(servAdr));
+    servAdr.sin_family = AF_INET;
+    servAdr.sin_addr.s_addr = inet_addr(argv[1]);
+    servAdr.sin_port = htons(std::atoi(argv[2]));
+
+    char buf[BUF_SIZE] = { 0 };
+    // 不用连接，直接发送消息
+    while (true) {
+        std::cout << "输入信息：";
+        std::string msg;
+        std::cin >> msg;
+        if (msg == "Q" || msg == "q") {
+            break;
+        }
+
+        sendto(clntSock, msg.c_str(), msg.size(), 0, (sockaddr*)&servAdr, sizeof(servAdr));
+        socklen_t szAdr = sizeof(servAdr);
+        int strLen = recvfrom(clntSock, buf, BUF_SIZE, 0, (sockaddr*)&servAdr, &szAdr);
+        buf[strLen] = 0;
+        std::string adrStr = inet_ntoa(servAdr.sin_addr);
+        std::cout << "从" << adrStr << "收到消息：" << buf << std::endl;
+    }
+
+    close(clntSock);
+
+    return 0;
+}
+
+
+```
+
+若各位很好地理解了第4章的connect函数，那么读上述代码时应有如下疑问：
+
+"TCP客户端套接字在调用connect函数时自动分配IP地址和端口号，既然如此，UDP 客户端何时分配IP地址和端口号？"
+
+所有套接字都应分配IP地址和端口，问题是直接分配还是自动分配。
+
+运行过程中的顺序并不重要。只需保证在调用sendto函数前，sendto函数的目标主机程序已经开始运行。
+
+UDP客户端套接字的地址分配
+
+前面讲解了UDP服务器端/客户端的实现方法。但如果仔细观察UDP客户端会发现，它缺少把IP和端口分配给套接字的过程。TCP客户端调用connect函数自动完成此过程，而UDP中连能承担相同功能的函数调用语句都没有。究竟在何时分配IP和端口号呢？
+
+UDP程序中，调用sendto函数传输数据前应完成对套接字的地址分配工作，因此调用bind函数。当然，bind函数在TCP程序中出现过，但bind函数不区分TCP和UDP，也就是说，在UDP程序中同样可以调用。另外，如果调用sendto函数时发现尚未分配地址信息，则在首次调用sendto 函数时给相应套接字自动分配IP和端口。而且此时分配的地址一直保留到程序结束为止，因此也可用来与其他UDP套接字进行数据交换。当然，IP用主机IP，端口号选尚未使用的任意端口号。
+
+综上所述，调用sendto函数时自动分配IP和端口号，因此，UDP客户端中通常无需额外的地址分配过程。所以之前示例中省略了该过程，这也是普遍的实现方式。
+
+## UDP的数据传输特性和调用connect函数
+
+我们之前通过示例验证了TCP传输的数据不存在数据边界，本节将验证UDP数据传输中存在数据边界。最后讨论UDP中connect函数的调用，以此结束UDP相关讨论。
+
+存在数据边界的UDP套接字
+
+前面说过TCP数据传输中不存在边界，这表示"数据传输过程中调用I/O函数的次数不具有任何意义。”
+
+相反，UDP是具有数据边界的协议，传输中调用I/O函数的次数非常重要。因此，输入函数的调用次数应和输出函数的调用次数完全一致，这样才能保证接收全部已发送数据。例如，调用3次输出函数发送的数据必须通过调用3次输入函数才能接收完。
+
+已连接（connected）UDP套接字与未连接（unconnected）UDP套接字
+
+TCP套接字中需注册待传输数据的目标IP和端口号，而UDP中则无需注册。因此，通过sendto 函数传输数据的过程大致可分为以下3个阶段。
+
+- 第1阶段：向UDP套接字注册目标IP和端口号。
+- 第2阶段：传输数据。
+- 第3阶段：删除UDP套接字中注册的目标地址信息。
+
+每次调用sendto函数时重复上述过程。每次都变更目标地址，因此可以重复利用同一UDP套接字向不同目标传输数据。这种未注册目标地址信息的套接字称为未连接套接字，反之，注册了目标地址的套接字称为连接connected套接字。显然，UDP套接字默认属于未连接套接字。但UDP 套接字在下述情况下显得不太合理：
+
+"IP为211.210.147.82的主机82号端口共准备了3个数据，调用3次sendto函数进行传输。"
+
+此时需重复3次上述三阶段。因此，要与同一主机进行长时间通信时，将UDP套接字变成已连接套接字会提高效率。上述三个阶段中，第一个和第三个阶段占整个通信过程近1/3的时间，缩短这部分时间将大大提高整体性能。
+
+创建已连接UDP套接字的过程格外简单，只需针对UDP套接字调用connect函数。
+
+之后就与TCP套接字一样，每次调用sendto函数时只需传输数据。因为已经指定了收发对象，所以不仅可以使用sendto、recvfrom函数，还可以使用write、read函数进行通信。
 
 
 
