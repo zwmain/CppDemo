@@ -192,6 +192,125 @@ void error_handling(char* message)
 >
 > 第46行：调用fcntl函数，关于此函数将单独说明。
 
+```c
+fcntc(recv_sock, F_SETOWN, getpid());
+```
+`fcntl`函数用于控制文件描述符，但上述调用语句的含义如下：
+
+将文件描述符`recv_sock`指向的套接字拥有者`F_SETOWN`，改为把`getpid`函数返回值所指向的进程。
+
+### 检查输入缓冲
+
+同时设置`MSG_PEEK`选项和`MSG_DONTWAIT`选项，以验证输入缓冲是否存在接收的数据。
+设置`MSG_PEEK`选项并调用`recv`函数时，即使读取了输入缓冲的数据也不会删除。因此，该选项通常与`MSG_DONTWAIT`合作，用于调用以非阻塞方式验证待读数据存在与否的函数。
+
+示例：
+
+`peek_send.cpp`
+
+```c++
+#include <arpa/inet.h>
+#include <cstring>
+#include <iostream>
+#include <sys/socket.h>
+#include <unistd.h>
+
+int main(int argc, char* argv[])
+{
+    if (argc != 3) {
+        std::cout << "Usage: " << argv[0] << " <IP> <PORT>" << std::endl;
+        exit(1);
+    }
+
+    int sock = socket(PF_INET, SOCK_STREAM, 0);
+
+    sockaddr_in send_adr;
+    std::memset(&send_adr, 0, sizeof(send_adr));
+    send_adr.sin_family = AF_INET;
+    send_adr.sin_addr.s_addr = inet_addr(argv[1]);
+    send_adr.sin_port = htons(std::atoi(argv[2]));
+
+    int rtn = connect(sock, (sockaddr*)&send_adr, sizeof(send_adr));
+    if (rtn == -1) {
+        std::cout << "connect error" << std::endl;
+        return 0;
+    }
+
+    std::string msg = "123";
+    write(sock, msg.c_str(), msg.size());
+    close(sock);
+
+    return 0;
+}
+
+```
+
+`peek_recv.cpp`
+
+```c++
+#include <arpa/inet.h>
+#include <cstring>
+#include <iostream>
+#include <sys/socket.h>
+#include <unistd.h>
+
+constexpr size_t BUF_SIZE = 30;
+
+int main(int argc, char* argv[])
+{
+    if (argc != 2) {
+        std::cout << "Usage: " << argv[0] << " <PORT>" << std::endl;
+        return 0;
+    }
+
+    int acpt_sock = socket(PF_INET, SOCK_STREAM, 0);
+
+    sockaddr_in acpt_adr;
+    std::memset(&acpt_adr, 0, sizeof(acpt_adr));
+    acpt_adr.sin_family = AF_INET;
+    acpt_adr.sin_addr.s_addr = htonl(INADDR_ANY);
+    acpt_adr.sin_port = htons(std::atoi(argv[1]));
+
+    int rtn = bind(acpt_sock, (sockaddr*)&acpt_adr, sizeof(acpt_adr));
+    if (rtn == -1) {
+        std::cout << "bind error" << std::endl;
+        return 0;
+    }
+
+    listen(acpt_sock, 5);
+
+    sockaddr_in recv_adr;
+    std::memset(&recv_adr, 0, sizeof(recv_adr));
+    socklen_t recv_sz = sizeof(recv_adr);
+
+    int recv_sock = accept(acpt_sock, (sockaddr*)&recv_adr, &recv_sz);
+
+    char buf[BUF_SIZE] = { 0 };
+    int str_sz = 0;
+    while (true) {
+        str_sz = recv(recv_sock, buf, sizeof(buf) - 1, MSG_PEEK | MSG_DONTWAIT);
+        if (str_sz > 0) {
+            break;
+        }
+    }
+
+    buf[str_sz] = 0;
+    std::cout << "Buffering " << str_sz << " bytes: " << buf << std::endl;
+
+    str_sz = recv(recv_sock, buf, sizeof(buf) - 1, 0);
+    buf[str_sz] = 0;
+    std::cout << "Read again: " << buf << std::endl;
+
+    close(acpt_sock);
+    close(recv_sock);
+
+    return 0;
+}
+
+```
+
+运行结果可以验证，仅发送1次的数据被读取了2次，因为第一次调用了`recv`函数时设置了`MSG_PEEK`可选项。
+
 
 ## 13.2 readv & writev 函数
 
