@@ -314,7 +314,52 @@ int main(int argc, char* argv[])
 
 ## 13.2 readv & writev 函数
 
-待完成
+`readv`和`writev`函数的功能可概括为：对数据进行整合传输以及发送
+
+通过`writev`可以将分散保存在多个缓冲中的数据一并发送，通过`readv`函数可以由多个缓冲区分别接收。
+因此，可以适当使用这2个函数，减少IO调用次数。
+
+```c
+#include <sys/uio.h>
+
+ssize_t writev(int fileds, const struct iovec* iov, int iovcnt);
+
+// 成功时返回发送的字节数，失败时返回-1
+// filedes      表示数据传输对象的套接字文件描述符
+// iov          iovec结构体数组的地址值，结构体iovec中包含待发送数据的位置和大小信息
+// iovcnt       向第二个参数传递的数组长度
+
+// iovec结构体
+struct iovec
+{
+    void* iov_base; // 缓冲地址
+    size_t iov_len; // 缓冲大小
+}
+
+```
+
+iovec由保存待发送数据的缓冲地址值和数据长度信息构成。
+
+```c
+#include <iostream>
+#include <sys/uio.h>
+
+int main(int argc, char* argv[])
+{
+    iovec vec[2];
+    char buf1[] = "ABCDEFG";
+    char buf2[] = "1234567";
+    vec[0].iov_base = buf1;
+    vec[0].iov_len = 3;
+    vec[1].iov_base = buf2;
+    vec[1].iov_len = 4;
+    int strLen = writev(1, vec, 2); // 文件描述符为1表示向控制台输出数据
+    std::cout << std::endl;
+    std::cout << "Write bytes: " << strLen << std::endl;
+    return 0;
+}
+
+```
 
 ## 13.3 基于Windows的实现
 
