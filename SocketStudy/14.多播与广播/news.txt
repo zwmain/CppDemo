@@ -1,0 +1,4 @@
+This is a news.
+这是一个新闻。
+Test for UDP multi-cast
+测试UDP多播。
