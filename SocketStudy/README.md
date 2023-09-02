@@ -13,3 +13,12 @@ cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug -DCMAKE_EXPORT_COMPILE_COMMANDS=TRU
 - `-DCMAKE_BUILD_TYPE`设置构建类型
 - `-DCMAKE_EXPORT_COMPILE_COMMANDS`指定生成`compile_commands.json`文件
 
+CMake编译项目
+
+```shell
+cmake --build build --config Debug
+```
+
+- `--build`选项指定构建文件夹
+- `--config`设置编译类型
+
