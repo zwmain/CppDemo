@@ -195,6 +195,21 @@ Coc也需要配置，配置很多，我也没看明白，官网给了一个示�
 
 安装完成后，可以编辑一个cpp文件尝试效果，Tab用来选择候选项，Enter用来确认
 
+对于多文件项目或者CMake项目，插件需要读取`compile_commands.json`文件，这个文件需要在编译时生成。
+
+CMake在构建项目时生成该文件，指令为：
+
+
+```shell
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug -DCMAKE_EXPORT_COMPILE_COMMANDS=TRUE
+```
+
+- `-S`指定源代码文件夹
+- `-B`指定输出目录
+- `-DCMAKE_BUILD_TYPE`设置构建类型
+- `-DCMAKE_EXPORT_COMPILE_COMMANDS`指定生成`compile_commands.json`文件
+
+
 ![代码提示](img/04.png)
 
 ### coc-cmake
