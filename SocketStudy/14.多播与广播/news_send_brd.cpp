@@ -30,14 +30,18 @@ int main(int argc, char* argv[])
     broad_adr.sin_port = htons(std::atoi(argv[2]));
 
     int so_brd = 1;
-    setsockopt(send_socket, SOL_SOCKET, SO_BROADCAST, &so_brd, sizeof(so_brd));
+    int rtn = setsockopt(send_socket, SOL_SOCKET, SO_BROADCAST, &so_brd, sizeof(so_brd));
+    if (rtn == -1) {
+        std::cout << "setsockopt error" << std::endl;
+        return 0;
+    }
 
     std::ifstream fi { FILEPATH };
     while (!fi.eof()) {
         std::string msg;
         fi >> msg;
-        sendto(send_socket, msg.c_str(), msg.size(), 0, (sockaddr*)&broad_adr, sizeof(broad_adr));
-        std::cout << msg << std::endl;
+        int s = sendto(send_socket, msg.c_str(), msg.size(), 0, (sockaddr*)&broad_adr, sizeof(broad_adr));
+        std::cout << s << ":" << msg << std::endl;
         sleep(2);
     }
 
