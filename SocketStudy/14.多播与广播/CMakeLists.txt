@@ -14,5 +14,6 @@ else()
     add_executable("sender" news_sender.cpp)
     add_executable("receiver" news_receiver.cpp)
     add_executable("brd_sender" news_send_brd.cpp)
+    add_executable("brd_receiver" news_receiver_brd.cpp)
 endif()
 
