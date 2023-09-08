@@ -24,13 +24,16 @@ int main(int argc, char* argv[])
     std::memset(&adr, 0, sizeof(adr));
     adr.sin_family = AF_INET;
     adr.sin_addr.s_addr = htonl(INADDR_ANY);
-    adr.sin_port = htons(std::atoi(argv[1]));
+    int port = std::atoi(argv[1]);
+    adr.sin_port = htons(port);
 
     int rtn = bind(recvSock, (SOCKADDR*)&adr, sizeof(adr));
     if (rtn == SOCKET_ERROR) {
         std::cout << "bind error" << std::endl;
         return 0;
     }
+
+    std::cout << "服务已启动：" << port << std::endl;
 
     char buf[BUF_SIZE] = { 0 };
     while (true) {
@@ -39,7 +42,7 @@ int main(int argc, char* argv[])
             break;
         }
         buf[strLen] = 0;
-        std::cout << buf;
+        std::cout << buf << std::endl;
     }
 
     closesocket(recvSock);

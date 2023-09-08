@@ -8,6 +8,7 @@ add_definitions(-DFILEPATH="${PROJECT_SOURCE_DIR}/news.txt")
 
 message("OS name: ${CMAKE_SYSTEM_NAME}")
 if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
+    add_compile_options("/source-charset:utf-8")
     add_executable("win_brd_recv" new_recv_brd_win.cpp)
     target_link_libraries("win_brd_recv" Ws2_32.lib)
 else()
