@@ -43,15 +43,15 @@ int main(int argc, char* argv[])
     const int NUM = std::atoi(argv[3]);
     char buf[BUF_SIZE] = { 0 };
     for (int i = 0; i < NUM; ++i) {
-        int j = i % dataArr.size();
-        auto& msg = dataArr[j];
-        write(clntSock, msg.c_str(), msg.size());
-        int l = read(clntSock, buf, BUF_SIZE - 1);
-        if (l <= 0) {
-            continue;
+        for (auto& msg : dataArr) {
+            write(clntSock, msg.c_str(), msg.size());
+            // int l = read(clntSock, buf, BUF_SIZE - 1);
+            // if (l <= 0) {
+            //     continue;
+            // }
+            // buf[l] = 0;
+            // std::cout << buf << std::endl;
         }
-        buf[l] = 0;
-        std::cout << buf << std::endl;
     }
 
     close(clntSock);

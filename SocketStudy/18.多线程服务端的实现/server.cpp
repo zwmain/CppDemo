@@ -10,7 +10,7 @@
 #include <sys/socket.h>
 #include <unistd.h>
 
-constexpr size_t BUF_SIZE = 4;
+constexpr size_t BUF_SIZE = 1024;
 constexpr size_t EPOLL_SIZE = 64;
 bool isRunning = true;
 
@@ -154,7 +154,7 @@ void dealWithRequest(const int servSock, const int curSock, const int epFd)
             } else {
                 buf[strLen] = { 0 };
                 std::cout << "接收客户端" << curSock << "的数据：" << buf << std::endl;
-                write(curSock, buf, strLen);
+                // write(curSock, buf, strLen);
             }
         }
     }
