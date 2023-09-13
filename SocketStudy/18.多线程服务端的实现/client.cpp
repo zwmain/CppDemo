@@ -51,7 +51,7 @@ int main(int argc, char* argv[])
             continue;
         }
         buf[l] = 0;
-        std::cout << "接收：" << buf << std::endl;
+        std::cout << buf << std::endl;
     }
 
     close(clntSock);
@@ -72,5 +72,6 @@ std::vector<std::string> getData()
         std::getline(fi, l);
         res.push_back(std::move(l));
     }
+    std::cout << "数据共" << res.size() << "行" << std::endl;
     return res;
 }
