@@ -1,12 +1,9 @@
 #include <ThreadPool.hpp>
 #include <arpa/inet.h>
-#include <asm-generic/signal.h>
-#include <bits/epoll_event.h>
 #include <csignal>
 #include <cstring>
 #include <errno.h>
 #include <fcntl.h>
-#include <ios>
 #include <iostream>
 #include <string>
 #include <sys/epoll.h>
