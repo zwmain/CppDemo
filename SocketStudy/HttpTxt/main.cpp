@@ -1,6 +1,10 @@
 #include <arpa/inet.h>
+#include <asm-generic/errno-base.h>
+#include <cerrno>
 #include <cstddef>
 #include <cstring>
+#include <errno.h>
+#include <fcntl.h>
 #include <iostream>
 #include <linux/in.h>
 #include <string>
@@ -10,6 +14,13 @@
 #include <unistd.h>
 
 constexpr size_t BUF_SIZE = 32;
+
+// 封装函数，设置套接字非阻塞
+void setNoBlockingMode(int fd)
+{
+    int flag = fcntl(fd, F_GETFL);
+    fcntl(fd, F_SETFL, flag | O_NONBLOCK);
+}
 
 int main(int argc, char* argv[])
 {
@@ -45,15 +56,27 @@ int main(int argc, char* argv[])
     std::memset(&clntAdr, 0, sizeof(clntAdr));
     socklen_t clntLen = sizeof(clntAdr);
     int clntSock = accept(servSock, (sockaddr*)&clntAdr, &clntLen);
+    setNoBlockingMode(clntSock);
     std::cout << "接收到连接" << clntSock << std::endl;
 
     char buf[BUF_SIZE] = { 0 };
     while (true) {
         int n = read(clntSock, buf, BUF_SIZE - 1);
-        buf[n] = 0;
-        std::cout << buf;
+        if (n == 0) {
+            std::cout << "客户端：" << clntSock << "断开连接" << std::endl;
+            break;
+        } else if (n < 0) {
+            if (errno == EAGAIN) {
+                std::cout << "读取完毕" << std::endl;
+            } else {
+                std::cout << "读取错误" << std::endl;
+            }
+            break;
+        } else {
+            buf[n] = 0;
+            std::cout << buf;
+        }
     }
-
     std::cout << "退出" << std::endl;
     close(clntSock);
     close(servSock);
