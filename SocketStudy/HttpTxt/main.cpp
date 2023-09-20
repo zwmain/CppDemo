@@ -1,5 +1,4 @@
 #include <arpa/inet.h>
-#include <asm-generic/errno-base.h>
 #include <cerrno>
 #include <cstddef>
 #include <cstring>
@@ -8,7 +7,6 @@
 #include <iostream>
 #include <linux/in.h>
 #include <string>
-#include <sys/endian.h>
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <unistd.h>
