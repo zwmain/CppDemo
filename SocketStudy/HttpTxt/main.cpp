@@ -77,6 +77,19 @@ int main(int argc, char* argv[])
             std::cout << buf;
         }
     }
+
+    const std::string resHeader = "HTTP/1.1 200 OK\r\n"
+                                  "Content-Type: text/html\r\n"
+                                  "\r\n";
+    const std::string resBody = "<!DOCTYPE html>\r\n"
+                                "<html>\r\n"
+                                "<head><title>HttpTxt</title></head>\r\n"
+                                "<body>简单的HTTP响应</body>\r\n"
+                                "</html>\r\n";
+
+    write(clntSock, resHeader.c_str(), resHeader.size());
+    write(clntSock, resBody.c_str(), resBody.size());
+
     std::cout << "退出" << std::endl;
     close(clntSock);
     close(servSock);
