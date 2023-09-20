@@ -79,7 +79,7 @@ int main(int argc, char* argv[])
     }
 
     const std::string resHeader = "HTTP/1.1 200 OK\r\n"
-                                  "Content-Type: text/html\r\n"
+                                  "Content-Type: text/html;charset=utf-8\r\n"
                                   "\r\n";
     const std::string resBody = "<!DOCTYPE html>\r\n"
                                 "<html>\r\n"
