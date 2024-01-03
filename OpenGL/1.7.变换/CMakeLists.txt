@@ -13,3 +13,9 @@ add_executable(
     main.cpp
     ${GLAD_SRC_FILE}
 )
+
+add_executable(
+    "${PROJECT_NAME}.2"
+    main2.cpp
+    ${GLAD_SRC_FILE}
+)
