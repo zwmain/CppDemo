@@ -17,10 +17,6 @@
 #define VER_GLSL_FILE "../../../1.7.纹理/ver.glsl"
 #endif
 
-#ifndef FRG2_GLSL_FILE
-#define FRG2_GLSL_FILE "../../../1.7.纹理/frg2.glsl"
-#endif
-
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
     glViewport(0, 0, width, height);
@@ -102,7 +98,7 @@ int main()
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
-    Shader sdr(VER_GLSL_FILE, FRG2_GLSL_FILE);
+    Shader sdr(VER_GLSL_FILE, FRG_GLSL_FILE);
 
     // 创建纹理对象1
     unsigned int texture1;
