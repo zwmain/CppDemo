@@ -12,6 +12,7 @@ set(GLAD_SRC_FILE ${TRD_DIR}/glad/src/glad.c)
 set(SHADER_DIR ${TRD_DIR}/shader)
 set(STB_IMAGE ${TRD_DIR}/stb-image)
 set(GLM_DIR ${TRD_DIR}/glm)
+set(CAM_DIR ${TRD_DIR}/camera)
 
 set(ASSETS_DIR ${CMAKE_SOURCE_DIR}/assets)
 set(TEX_DIR ${ASSETS_DIR}/texture)
@@ -24,6 +25,7 @@ include_directories(${GLAD_DIR}/include)
 include_directories(${SHADER_DIR})
 include_directories(${STB_IMAGE})
 include_directories(${GLM_DIR}/include)
+include_directories(${CAM_DIR})
 
 link_libraries(glfw)
 
