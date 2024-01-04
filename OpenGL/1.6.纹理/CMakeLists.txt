@@ -14,16 +14,19 @@ add_executable(
     ${PROJECT_NAME}
     main.cpp
     ${GLAD_SRC_FILE}
+    ${SHADER_FILE}
 )
 
 add_executable(
     "${PROJECT_NAME}.2"
     main2.cpp
     ${GLAD_SRC_FILE}
+    ${SHADER_FILE}
 )
 
 add_executable(
     "${PROJECT_NAME}.3"
     main3.cpp
     ${GLAD_SRC_FILE}
+    ${SHADER_FILE}
 )
