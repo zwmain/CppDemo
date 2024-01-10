@@ -11,19 +11,19 @@
 #include "stb_image.h"
 
 #ifndef VER_GLSL_FILE
-#define VER_GLSL_FILE "../../../2.5.3.投光物-聚光/ver.glsl"
+#define VER_GLSL_FILE "../../../2.5.3.投光物-聚光/box.vert"
 #endif
 
 #ifndef FRG_GLSL_FILE
-#define FRG_GLSL_FILE "../../../2.5.3.投光物-聚光/frg.glsl"
+#define FRG_GLSL_FILE "../../../2.5.3.投光物-聚光/box.frag"
 #endif
 
 #ifndef LIGFRG_GLSL_FILE
-#define LIGFRG_GLSL_FILE "../../../2.5.3.投光物-聚光/light-frg.glsl"
+#define LIGFRG_GLSL_FILE "../../../2.5.3.投光物-聚光/light.frag"
 #endif
 
 #ifndef LIGVER_GLSL_FILE
-#define LIGVER_GLSL_FILE "../../../2.5.3.投光物-聚光/light-ver.glsl"
+#define LIGVER_GLSL_FILE "../../../2.5.3.投光物-聚光/light.vert"
 #endif
 
 #ifndef TEX_DIR

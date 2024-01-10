@@ -1,10 +1,10 @@
 cmake_minimum_required(VERSION 3.18)
 project("2.5.3" LANGUAGES CXX)
 
-set(VER_GLSL_FILE ${PROJECT_SOURCE_DIR}/ver.glsl)
-set(FRG_GLSL_FILE ${PROJECT_SOURCE_DIR}/frg.glsl)
-set(LIGFRG_GLSL_FILE ${PROJECT_SOURCE_DIR}/light-frg.glsl)
-set(LIGVER_GLSL_FILE ${PROJECT_SOURCE_DIR}/light-ver.glsl)
+set(VER_GLSL_FILE ${PROJECT_SOURCE_DIR}/box.vert)
+set(FRG_GLSL_FILE ${PROJECT_SOURCE_DIR}/box.frag)
+set(LIGFRG_GLSL_FILE ${PROJECT_SOURCE_DIR}/light.frag)
+set(LIGVER_GLSL_FILE ${PROJECT_SOURCE_DIR}/light.vert)
 
 add_definitions(-DTEX_DIR="${TEX_DIR}")
 add_definitions(-DVER_GLSL_FILE="${VER_GLSL_FILE}")
