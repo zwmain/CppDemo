@@ -187,7 +187,7 @@ int main()
     data = nullptr;
     data = stbi_load(imgPath.c_str(), &width, &height, &nrChannels, 0);
     if (data) {
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
         glGenerateMipmap(GL_TEXTURE_2D);
     } else {
         std::cout << "Failed to load texture2" << std::endl;
@@ -197,6 +197,7 @@ int main()
     Shader lightingShader(VER_GLSL_FILE, FRG_GLSL_FILE);
     Shader lampShader(LIGVER_GLSL_FILE, LIGFRG_GLSL_FILE);
 
+    lightingShader.use();
     lightingShader.setInt("material.diffuse", 0);
     lightingShader.setInt("material.specular", 1);
 
