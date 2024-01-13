@@ -15,12 +15,14 @@ set(STB_IMAGE ${TRD_DIR}/stb-image)
 set(GLM_DIR ${TRD_DIR}/glm)
 set(CAM_DIR ${TRD_DIR}/camera)
 set(CAM_FILE ${CAM_DIR}/camera.h)
+set(ASSIMP_DIR ${TRD_DIR}/assimp-5.3.1)
 
 set(ASSETS_DIR ${CMAKE_SOURCE_DIR}/assets)
 set(TEX_DIR ${ASSETS_DIR}/texture)
+set(MODEL_DIR ${ASSETS_DIR}/model)
 
 add_subdirectory(${GLFW_DIR})
-
+add_subdirectory(${ASSIMP_DIR})
 
 include_directories(${GLFW_DIR}/include)
 include_directories(${GLAD_DIR}/include)
@@ -28,8 +30,10 @@ include_directories(${SHADER_DIR})
 include_directories(${STB_IMAGE})
 include_directories(${GLM_DIR}/include)
 include_directories(${CAM_DIR})
+include_directories(${ASSIMP_DIR}/include)
 
 link_libraries(glfw)
+link_libraries(assimp)
 
 add_subdirectory("${CMAKE_SOURCE_DIR}/1.3.你好窗口")
 add_subdirectory("${CMAKE_SOURCE_DIR}/1.4.你好三角形")
